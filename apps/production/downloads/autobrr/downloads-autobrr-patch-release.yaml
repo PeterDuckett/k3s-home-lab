@@ -2,13 +2,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: bazarr
+  name: autobrr
   namespace: downloads
 spec:
   chart:
     spec:
-      version: ">=21.6.0"
+      version: ">=10.0.0"
   valuesFrom:
     - kind: ConfigMap
-      name: downloads-bazarr-config-map-helm-values
+      name: downloads-autobrr-config-map-helm-values
       valuesKey: values.yaml

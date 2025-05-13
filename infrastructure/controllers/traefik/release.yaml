@@ -11,8 +11,8 @@ spec:
       version: '34.x'
       sourceRef:
         kind: HelmRepository
-        name: traefik-charts
-        namespace: flux-system
+        name: traefik-repository
+        namespace: kube-system
       interval: 24h
   interval: 1h
   timeout: 5m

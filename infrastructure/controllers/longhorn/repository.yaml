@@ -2,9 +2,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: cert-manager-charts
-  namespace: cert-manager
+  name: longhorn-charts
+  namespace: longhorn-system
 spec:
-  type: "oci"
   interval: 24h
-  url: oci://ghcr.io/stefanprodan/charts
+  url: https://charts.longhorn.io

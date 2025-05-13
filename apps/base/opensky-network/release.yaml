@@ -2,13 +2,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: adguard-home
+  name: opensky-network
   namespace: system
 spec:
-  releaseName: adguard-home
+  releaseName: opensky-network
   chart:
     spec:
-      chart: adguard-home
+      chart: opensky-network
       sourceRef:
         kind: HelmRepository
         name: k8s-at-home-charts

@@ -2,13 +2,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: adguard-home
-  namespace: system
+  name: bazarr
+  namespace: downloads
 spec:
-  releaseName: adguard-home
+  releaseName: bazarr
   chart:
     spec:
-      chart: adguard-home
+      chart: bazarr
       sourceRef:
         kind: HelmRepository
         name: k8s-at-home-charts

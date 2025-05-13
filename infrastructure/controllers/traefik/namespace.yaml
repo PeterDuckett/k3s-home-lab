@@ -1,9 +1,5 @@
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta1
-kind: HelmRepository
+apiVersion: v1
+kind: Namespace
 metadata:
-  name: traefik-charts
-  namespace: kube-system
-spec:
-  interval: 24h
-  url: https://traefik.github.io/charts
+  name: kube-system

@@ -2,13 +2,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: adguard-home
+  name: tdarr
   namespace: system
 spec:
-  releaseName: adguard-home
+  releaseName: tdarr
   chart:
     spec:
-      chart: adguard-home
+      chart: tdarr
       sourceRef:
         kind: HelmRepository
         name: k8s-at-home-charts

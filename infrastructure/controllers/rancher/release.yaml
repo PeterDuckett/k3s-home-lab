@@ -2,21 +2,16 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: longhorn
-  namespace: longhorn-system
+  name: rancher
+  namespace: cattle-system
 spec:
   interval: 30m
   chart:
     spec:
-      chart: longhorn
-      version: '1.*'
+      chart: rancher
+      version: '2.*'
       sourceRef:
         kind: HelmRepository
-        name: longhorn-charts
-        namespace: longhorn-system
+        name: rancher-repository
+        namespace: cattle-system
       interval: 24h
-
-  values:
-    crds:
-      enabled: true
-      keep: true

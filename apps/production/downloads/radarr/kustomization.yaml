@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  #- kube-system-traefik-middleware-security-header.yaml
+  #- kube-system-traefik-certificate-default.yaml
+  - kube-system-traefik-config-map-helm-values.yaml
+bases:  
+  - ../../../base/traefik
+patchesStrategicMerge:
+  - kube-system-traefik-patch-release.yaml

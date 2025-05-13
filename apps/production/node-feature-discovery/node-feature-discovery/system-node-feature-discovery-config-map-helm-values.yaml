@@ -10,6 +10,10 @@ data:
     podAnnotations:
       configmap.reloader.stakater.com/reload: system-node-feature-discovery-config-map-helm-values
     
+    tls:
+      enable: true
+      certManager: true
+
     worker:
       resources:
         requests:

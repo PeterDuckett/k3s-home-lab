@@ -2,13 +2,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: adguard-home
+  name: pod-gateway
   namespace: system
 spec:
-  releaseName: adguard-home
+  releaseName: pod-gateway
   chart:
     spec:
-      chart: adguard-home
+      chart: pod-gateway
       sourceRef:
         kind: HelmRepository
         name: k8s-at-home-charts
