@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: downloads-bazarr-config-map-helm-values
+  namespace: downloads
+
+data:
+  values.yaml: |-
+    image:
+      repository: lscr.io/linuxserver/bazarr
+      tag: latest
+
+    env:
+      # -- Set the container timezone
+      TZ: UTC
+
+    podAnnotations:
+      setGateway: "false"
+      configmap.reloader.stakater.com/reload: downloads-bazarr-config-map-helm-values
+
+    ingress:
+      # -- Enable and configure ingress settings for the chart under this key.
+      # @default -- See values.yaml
+      main:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: "traefik"
+          cert-manager.io/cluster-issuer: letsencrypt-production
+        hosts:
+          - host: &host "bazarr.peterduckett.me"
+            paths:
+              - path: /
+        tls:
+          - secretName: downloads.bazarr.secret.tls
+            hosts:
+              - *host
+
+    # -- Configure persistence settings for the chart under this key.
+    # @default -- See values.yaml
+    persistence:
+      config:
+        enabled: true
+        existingClaim: downloads-bazarr-pvc-config
+
+      media:
+        enabled: false
+        mountPath: /media

@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: system-node-feature-discovery-config-map-helm-values
+  namespace: system
+
+data:
+  values.yaml: |-
+    podAnnotations:
+      configmap.reloader.stakater.com/reload: system-node-feature-discovery-config-map-helm-values
+    
+    worker:
+      resources:
+        requests:
+          cpu: 15m
+          memory: 64M
+        limits:
+          memory: 64M

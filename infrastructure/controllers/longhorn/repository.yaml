@@ -1,0 +1,10 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: cert-manager-charts
+  namespace: cert-manager
+spec:
+  type: "oci"
+  interval: 24h
+  url: oci://ghcr.io/stefanprodan/charts
