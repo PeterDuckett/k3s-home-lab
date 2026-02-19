@@ -1,5 +1,5 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: traefik
@@ -21,6 +21,3 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
-
-  experimental:
-    http3: true
