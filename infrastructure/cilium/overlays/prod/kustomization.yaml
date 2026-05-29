@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - ../../base
-  - bgp-config.yaml
 
 patches:
   - path: values-patch.yaml
