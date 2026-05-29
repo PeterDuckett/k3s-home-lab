@@ -5,5 +5,17 @@ metadata:
   namespace: kube-system
 spec:
   values:
-    bgpControlPlane:
-      enabled: true
+  # Increase timeouts for BPF compilation and proxy interactions
+    bpf:
+      compileTimeout: "10m"
+
+# If the agent is failing live/ready probes because it's booting too slow on the CM4s:
+    agent:
+      livenessProbe:
+        initialDelaySeconds: 120
+        periodSeconds: 30
+      readinessProbe:
+        initialDelaySeconds: 120
+        periodSeconds: 30
+        bgpControlPlane:
+          enabled: true
