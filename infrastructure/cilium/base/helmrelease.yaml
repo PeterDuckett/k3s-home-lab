@@ -14,6 +14,7 @@ metadata:
   namespace: kube-system
 spec:
   interval: 30m
+  timeout: 15m  # <--- ADD OR UPDATE THIS LINE
   chart:
     spec:
       chart: cilium
