@@ -1,0 +1,62 @@
+apiVersion: cilium.io/v2
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: homelab-lb-pool
+  namespace: kube-system
+spec:
+  blocks:
+    - cidr: 10.14.100.128/25   # Covers .128 to .255
+    # To precisely target .100 and up without touching node IPs, 
+    # it is often safer to just list a specific small block:
+    - cidr: 10.14.100.100/30   # Covers .100, .101, .102, .103
+---
+apiVersion: cilium.io/v2
+kind: CiliumBGPAdvertisement
+metadata:
+  name: service-advertisement
+  namespace: kube-system
+  labels:
+    bgp-advertise: "true"
+spec:
+  advertisements:
+    - advertisementType: Service
+      service:
+        addresses:
+          - FromPlugin
+---
+apiVersion: cilium.io/v2
+kind: CiliumBGPPeerConfig
+metadata:
+  name: udm-pro-peer
+  namespace: kube-system
+spec:
+  authSecretRef: null
+  gracefulRestart:
+    enabled: true
+    restartTimeSeconds: 120
+  families:
+    - afi: ipv4
+      safi: unicast
+      advertisements:
+        selector:
+          matchLabels:
+            bgp-advertise: "true"
+---
+apiVersion: cilium.io/v2
+kind: CiliumBGPClusterConfig
+metadata:
+  name: homelab-bgp-cluster
+  namespace: kube-system
+spec:
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/control-plane: ""
+  bgpInstances:
+    - name: "k3s-bgp"
+      localASN: 65002
+      peers:
+        - name: "udm-pro"
+          peerAddress: 10.14.100.1
+          peerASN: 65001
+          peerConfigRef:
+            name: udm-pro-peer
