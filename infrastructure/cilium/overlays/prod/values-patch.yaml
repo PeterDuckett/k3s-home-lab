@@ -5,6 +5,7 @@ metadata:
   namespace: kube-system
 spec:
   values:
+  # just a test
   # Increase timeouts for BPF compilation and proxy interactions
     bpf:
       compileTimeout: "10m"
