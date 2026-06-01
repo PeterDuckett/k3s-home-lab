@@ -7,8 +7,8 @@ metadata:
     io.cilium.bgp/pool: homelab-pool
 spec:
   blocks:
-    - cidr: 10.14.100.128/25   # Covers .128 to .255
-    - cidr: 10.14.100.100/30   # Covers .100 to .103 (Make sure UDM DHCP avoids these!)
+    - cidr: 10.14.100.128/25   # Covers .128 to .255 (.254 usable)
+    - cidr: 10.14.100.100/30   # Covers .100 to .103
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPAdvertisement
@@ -22,10 +22,9 @@ spec:
     - advertisementType: Service
       service:
         addresses:
-          - FromPlugin
+          - LoadBalancerIP     # <-- FIXED: Replaced "FromPlugin"
       selector:
-        matchLabels:
-          io.cilium.bgp/pool: homelab-pool
+        matchLabels: {}        # <-- OPTIMIZED: Matches all services so they get advertised to the UDM Pro
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPPeerConfig
