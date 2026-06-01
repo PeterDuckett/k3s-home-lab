@@ -39,7 +39,9 @@ spec:
   families:
     - afi: ipv4
       safi: unicast
-      # <-- FIXED: Invalid advertisements block removed from here
+      advertisements:
+        matchLabels:
+          bgp-advertise: "true"
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPClusterConfig
@@ -54,11 +56,7 @@ spec:
   bgpInstances:
     - name: "k3s-bgp"
       localASN: 65002
-      # <-- FIXED: Advertisements are tied to the BGP instance, mapping via label selector
-      advertisements:
-        selector:
-          matchLabels:
-            bgp-advertise: "true"
+      # FIXED: Extraneous advertisements block completely removed from here
       peers:
         - name: "udm-pro"
           peerAddress: 10.14.100.1
