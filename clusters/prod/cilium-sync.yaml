@@ -39,10 +39,8 @@ metadata:
   namespace: flux-system
 spec:
   interval: 15m
-  prune: true
-  wait: true
-  timeout: 5m
-  path: ./infrastructure/traefik/overlays/prod
   sourceRef:
     kind: GitRepository
     name: flux-system
+  path: ./infrastructure/traefik/overlays/prod # Must match your Git path exactly!
+  prune: true
