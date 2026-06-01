@@ -1,0 +1,57 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: longhorn
+  namespace: flux-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: longhorn
+      version: "1.11.x" # Check for the latest stable version compatible with your K8s engine
+      sourceRef:
+        kind: HelmRepository
+        name: longhorn
+      interval: 1h
+  targetNamespace: longhorn-system
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    defaultSettings:
+      # Optional: Longhorn defaults to 3 replicas. 
+      # Since you have 8 nodes, 3 is fine, but you can adjust your default replica count here.
+      defaultReplicaCount: 3 
+      defaultDataSelector: "storage-node"
+    csi:
+      # Crucial fix for K3s kubelet directory path
+      kubeletRootDir: /var/lib/rancher/k3s/agent/kubelet
+    
+    # 1. Restrict the Longhorn Manager (the control plane) to masters
+    longhornManager:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: "true"
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exists"
+          effect: "NoSchedule"
+
+    # 2. Restrict the Longhorn Engine/Replica pods (where data lives) to masters
+    longhornDriver:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: "true"
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exists"
+          effect: "NoSchedule"
+      
