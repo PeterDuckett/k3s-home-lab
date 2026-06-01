@@ -1,0 +1,50 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: infisical
+  namespace: flux-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: infisical-standalone
+      version: "0.2.0" # Check for latest chart version
+      sourceRef:
+        kind: HelmRepository
+        name: infisical
+      interval: 1h
+  targetNamespace: infisical
+  install:
+    createNamespace: true
+  values:
+    # 1. Main Infisical Application Settings
+    backend:
+      replicaCount: 2
+      # Generate a random 32-byte hex string for this key before deploying
+      encryptionKey: "f3cbe836dabccc0da275d03d4be8b689a1699e910c036418130485eec6d3fce6"
+      
+      # Pin Infisical API server to your Turing Pi masters
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: "true"
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+
+    # 2. Database Settings (Built-in Postgres)
+    postgresql:
+      enabled: true
+      primary:
+        # Instruct Postgres to use your fast Longhorn NVMe storage class
+        persistence:
+          enabled: true
+          storageClass: "longhorn" 
+          size: 10Gi
+        
+        # Lock the database execution onto the masters alongside the storage
+        nodeSelector:
+          node-role.kubernetes.io/control-plane: "true"
+        tolerations:
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
