@@ -17,6 +17,11 @@ spec:
   install:
     createNamespace: true
   values:
+
+    secrets:
+      encryptionKey: "f3cbe836dabccc0da275d03d4be8b689a1699e910c036418130485eec6d3fce6"
+      authSecret: "eacb586002ad6687b0ef42c77e6dd08fb285f26137b2c0bc22c8139b42ce1c2c"
+
     # 1. Main Infisical Application Settings
     backend:
       replicaCount: 2
