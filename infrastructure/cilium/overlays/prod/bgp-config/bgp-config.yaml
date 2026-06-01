@@ -7,8 +7,8 @@ metadata:
     io.cilium.bgp/pool: homelab-pool
 spec:
   blocks:
-    - cidr: 10.14.100.128/25   # Covers .128 to .255 (.254 usable)
-    - cidr: 10.14.100.100/30   # Covers .100 to .103
+    - cidr: 10.14.100.128/25
+    - cidr: 10.14.100.100/30
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPAdvertisement
@@ -22,9 +22,9 @@ spec:
     - advertisementType: Service
       service:
         addresses:
-          - LoadBalancerIP     # <-- FIXED: Replaced "FromPlugin"
+          - LoadBalancerIP
       selector:
-        matchLabels: {}        # <-- OPTIMIZED: Matches all services so they get advertised to the UDM Pro
+        matchLabels: {}
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPPeerConfig
@@ -39,10 +39,7 @@ spec:
   families:
     - afi: ipv4
       safi: unicast
-      advertisements:
-        selector:
-          matchLabels:
-            bgp-advertise: "true"
+      # <-- FIXED: Invalid advertisements block removed from here
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPClusterConfig
@@ -57,6 +54,11 @@ spec:
   bgpInstances:
     - name: "k3s-bgp"
       localASN: 65002
+      # <-- FIXED: Advertisements are tied to the BGP instance, mapping via label selector
+      advertisements:
+        selector:
+          matchLabels:
+            bgp-advertise: "true"
       peers:
         - name: "udm-pro"
           peerAddress: 10.14.100.1
