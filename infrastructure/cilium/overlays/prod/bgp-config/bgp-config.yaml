@@ -3,12 +3,12 @@ kind: CiliumLoadBalancerIPPool
 metadata:
   name: homelab-lb-pool
   namespace: kube-system
+  labels:
+    io.cilium.bgp/pool: homelab-pool
 spec:
   blocks:
     - cidr: 10.14.100.128/25   # Covers .128 to .255
-    # To precisely target .100 and up without touching node IPs, 
-    # it is often safer to just list a specific small block:
-    - cidr: 10.14.100.100/30   # Covers .100, .101, .102, .103
+    - cidr: 10.14.100.100/30   # Covers .100 to .103 (Make sure UDM DHCP avoids these!)
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPAdvertisement
@@ -23,6 +23,9 @@ spec:
       service:
         addresses:
           - FromPlugin
+      selector:
+        matchLabels:
+          io.cilium.bgp/pool: homelab-pool
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPPeerConfig
@@ -49,8 +52,9 @@ metadata:
   namespace: kube-system
 spec:
   nodeSelector:
-    matchLabels:
-      node-role.kubernetes.io/control-plane: ""
+    matchExpressions:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
   bgpInstances:
     - name: "k3s-bgp"
       localASN: 65002
