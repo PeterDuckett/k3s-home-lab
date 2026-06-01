@@ -10,17 +10,29 @@ spec:
       dashboard:
         enabled: true
 
+    service:
+      annotations:
+        # This tells Cilium LB IPAM to assign this specific IP from your pool
+        lbipam.cilium.io/ips: "10.14.100.100"
+
     # Layout rules for your RK1 and RPi mixed cluster
     deployment:
       replicas: 3
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                  - key: app.kubernetes.io/name
-                    operator: In
-                    values:
-                      - traefik
-              topologyKey: kubernetes.io/hostname
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: Exists
+        podAntiAffinity: # <-- Moved inside the affinity block
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - traefik
+                topologyKey: kubernetes.io/hostname
