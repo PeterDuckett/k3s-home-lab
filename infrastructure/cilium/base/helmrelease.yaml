@@ -34,6 +34,6 @@ spec:
     ipam:
       operator:
         clusterPoolIPv4PodCIDRList: ["10.42.0.0/16"]
-    k8sServiceHost: "12.0.0.1"
+    k8sServiceHost: "10.14.100.13"
     k8sServicePort: 6443
     kubeProxyReplacement: true
