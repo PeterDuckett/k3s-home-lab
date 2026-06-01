@@ -39,3 +39,5 @@ spec:
     kubeProxyReplacement: true
     envoy:
       enabled: false
+    bgpControlPlane:
+      enabled: true
