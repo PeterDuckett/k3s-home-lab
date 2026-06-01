@@ -10,15 +10,6 @@ spec:
       dashboard:
         enabled: true
 
-    # SSL Enforcement
-    ports:
-      web:
-        redirectTo:
-          port: websecure
-      websecure:
-        tls:
-          enabled: true
-
     # Layout rules for your RK1 and RPi mixed cluster
     deployment:
       replicas: 3
