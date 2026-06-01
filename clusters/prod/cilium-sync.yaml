@@ -44,3 +44,17 @@ spec:
     name: flux-system
   path: ./infrastructure/traefik/overlays/prod # Must match your Git path exactly!
   prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 2m
+  path: ./infrastructure/cert-manager/overlays/prod
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
