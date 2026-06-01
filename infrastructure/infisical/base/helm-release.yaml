@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: infisical-standalone
-      version: "0.2.0" # Check for latest chart version
+      version: "1.8.x" 
       sourceRef:
         kind: HelmRepository
         name: infisical
