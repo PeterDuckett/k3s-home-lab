@@ -27,9 +27,11 @@ spec:
       createDefaultDiskLabeledNodes: true 
       # Ensure you apply the "storage-node=true" label to your worker nodes!
       customLabels: "storage-node:true"
+      kubeletRootDir: "/var/lib/kubelet"
     
     # CORRECT KEY: This configures the actual CSI driver components
     longhornCSI:
+      kubeletRootDir: "/var/lib/kubelet"
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
           operator: "Exists"
