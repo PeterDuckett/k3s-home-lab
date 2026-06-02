@@ -29,7 +29,7 @@ spec:
       defaultDataSelector: "storage-node"
     csi:
       # Crucial fix for K3s kubelet directory path
-      kubeletkubeletRootDir: /var/lib/rancher/k3s/agent/kubelet
+      kubeletRootDir: /var/lib/rancher/k3s/agent/kubelet
     
     # 1. Restrict the Longhorn Manager (the control plane) to masters
     longhornManager:
