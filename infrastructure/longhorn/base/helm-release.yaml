@@ -48,3 +48,7 @@ spec:
         - key: "node-role.kubernetes.io/master"
           operator: "Exists"
           effect: "NoSchedule"
+
+    longhornDriverDeployer:
+      environment:
+        KUBELET_ROOT_DIR: "/var/lib/rancher/k3s/agent/kubelet"
