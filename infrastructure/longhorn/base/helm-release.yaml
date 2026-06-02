@@ -31,7 +31,9 @@ spec:
     csi:
       # CRITICAL K3S DIRECTORY OVERRIDE:
       kubeletRootDir: /var/lib/rancher/k3s/agent/kubelet
-    
+    longhornDriverDeployer:
+      environment:
+        KUBELET_ROOT_DIR: /var/lib/rancher/k3s/agent/kubelet
     # Tolerates master taints so control plane orchestration can occur
     longhornManager:
       tolerations:
