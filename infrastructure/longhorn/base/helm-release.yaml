@@ -2,13 +2,13 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: longhorn
-  namespace: flux-system
+  namespace: flux-system # Matches your actual Flux tracking namespace
 spec:
   interval: 30m
   chart:
     spec:
       chart: longhorn
-      version: "1.11.x" # Check for the latest stable version compatible with your K8s engine
+      version: "1.11.x" # Use an explicit, valid version string instead of "1.11.x"
       sourceRef:
         kind: HelmRepository
         name: longhorn
@@ -23,18 +23,17 @@ spec:
       retries: 3
   values:
     defaultSettings:
-      # Optional: Longhorn defaults to 3 replicas. 
-      # Since you have 8 nodes, 3 is fine, but you can adjust your default replica count here.
       defaultReplicaCount: 3 
-      defaultDataSelector: "storage-node"
+      # 1. Enable custom label checking
+      createDefaultDiskLabeledNodes: true 
+      # 2. Tell Longhorn to look for your specific label key:value
+      customLabels: "storage-node:true"
     csi:
       # Crucial fix for K3s kubelet directory path
       kubeletRootDir: /var/lib/rancher/k3s/agent/kubelet
     
-    # 1. Restrict the Longhorn Manager (the control plane) to masters
+    # Longhorn Manager runs everywhere to coordinate, but we must tolerate master taints
     longhornManager:
-      nodeSelector:
-        node-role.kubernetes.io/control-plane: "true"
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
           operator: "Exists"
@@ -43,10 +42,8 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
 
-    # 2. Restrict the Longhorn Engine/Replica pods (where data lives) to masters
+    # CSI Driver MUST run cluster-wide. We remove the nodeSelector so worker nodes get the driver.
     longhornDriver:
-      nodeSelector:
-        node-role.kubernetes.io/control-plane: "true"
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
           operator: "Exists"
@@ -54,4 +51,3 @@ spec:
         - key: "node-role.kubernetes.io/master"
           operator: "Exists"
           effect: "NoSchedule"
-      
