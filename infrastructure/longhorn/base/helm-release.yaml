@@ -2,13 +2,13 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: longhorn
-  namespace: flux-system # Matches your actual Flux tracking namespace
+  namespace: flux-system  # The namespace where Flux tracks this release
 spec:
   interval: 30m
   chart:
     spec:
       chart: longhorn
-      version: "1.11.x" # Use an explicit, valid version string instead of "1.11.x"
+      version: "1.11.x"   # Replace with your specific desired version string
       sourceRef:
         kind: HelmRepository
         name: longhorn
@@ -23,16 +23,16 @@ spec:
       retries: 3
   values:
     defaultSettings:
-      defaultReplicaCount: 3 
-      # 1. Enable custom label checking
+      defaultReplicaCount: 3
+      # Tells Longhorn to only initialize physical disks where your custom label exists
       createDefaultDiskLabeledNodes: true 
-      # 2. Tell Longhorn to look for your specific label key:value
       customLabels: "storage-node:true"
+    
     csi:
-      # Crucial fix for K3s kubelet directory path
+      # CRITICAL K3S DIRECTORY OVERRIDE:
       kubeletRootDir: /var/lib/rancher/k3s/agent/kubelet
     
-    # Longhorn Manager runs everywhere to coordinate, but we must tolerate master taints
+    # Tolerates master taints so control plane orchestration can occur
     longhornManager:
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
@@ -42,7 +42,8 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
 
-    # CSI Driver MUST run cluster-wide. We remove the nodeSelector so worker nodes get the driver.
+    # CRITICAL: CSI Driver must run cluster-wide so worker nodes can mount volumes.
+    # No nodeSelector here!
     longhornDriver:
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
