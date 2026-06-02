@@ -8,10 +8,12 @@ spec:
   chart:
     spec:
       chart: longhorn
-      version: "1.11.x" # Note: Ensure your chart version is compatible; standard stable is currently 1.7.x / 1.8.x
+      # 1. Keep an eye on the version. Standard Longhorn versions are currently 1.7.x / 1.8.x.
+      version: "1.11.x" 
       sourceRef:
         kind: HelmRepository
         name: longhorn
+        namespace: flux-system # Explicitly defined namespace for safety
       interval: 1h
   targetNamespace: longhorn-system
   install:
@@ -25,11 +27,9 @@ spec:
     defaultSettings:
       defaultReplicaCount: 3
       createDefaultDiskLabeledNodes: true 
-      # Ensure you apply the "storage-node=true" label to your worker nodes!
-      customLabels: "storage-node:true"
       kubeletRootDir: "/var/lib/rancher/k3s/agent/kubelet"
     
-    # CORRECT KEY: This configures the actual CSI driver components
+    # 2. Added tolerations to ALL core system components so they can run on your masters
     longhornCSI:
       kubeletRootDir: "/var/lib/rancher/k3s/agent/kubelet"
       tolerations:
@@ -49,6 +49,16 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
 
-    longhornDriverDeployer:
+    longhornDriver:
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exists"
+          effect: "NoSchedule"
+
+    # 3. Standard helm values mapping for the driver deployer environment variable
+    driverDeployer:
       environment:
         KUBELET_ROOT_DIR: "/var/lib/rancher/k3s/agent/kubelet"
