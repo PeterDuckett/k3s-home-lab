@@ -5,7 +5,13 @@ resources:
 
 patches:
   - path: k3s-server-plan.yaml
+    target:
+      kind: Plan
+      name: k3s-server-plan
   - path: k3s-agent-plan.yaml
+    target:
+      kind: Plan
+      name: k3s-agent-plan
 
 # Crucial overlay rule: Forces the local plans to run where the official chart lives
 namespace: cattle-system
