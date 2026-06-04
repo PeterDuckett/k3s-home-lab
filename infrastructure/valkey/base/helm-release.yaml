@@ -1,0 +1,32 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: valkey
+  namespace: database
+spec:
+  releaseName: valkey
+  interval: 1h
+  chart:
+    spec:
+      chart: valkey
+      version: "1.x.x" # Adjust to your targeted chart version
+      sourceRef:
+        kind: HelmRepository
+        name: valkey
+        namespace: flux-system
+  values:
+    # Standard baseline configuration
+    architecture: replication # Or 'standalone' depending on your needs
+    auth:
+      enabled: true
+    primary:
+      persistence:
+        enabled: true
+        storageClass: "longhorn"
+        size: 8Gi
+    readReplicas:
+      replicaCount: 3
+      persistence:
+        enabled: true
+        storageClass: "longhorn"
+        size: 8Gi

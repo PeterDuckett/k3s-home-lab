@@ -1,0 +1,78 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ultrafeeder
+  namespace: default
+spec:
+  releaseName: ultrafeeder
+  interval: 10m
+  chart:
+    spec:
+      chart: app-template
+      version: "3.2.1" # Standard stable v3 app-template line
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: default
+      interval: 10m
+  values:
+    controllers:
+      main:
+        type: deployment
+        replicas: 1
+        
+        # Pin the pod to the physical machine with the USB stick
+        nodeSelector:
+          kubernetes.io/hostname: "k3s-node-cm4-01"
+
+        containers:
+          main:
+            image:
+              repository: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
+              tag: latest
+              pullPolicy: Always
+            securityContext:
+              privileged: true # Crucial for raw USB dongle access
+            env:
+              TZ: "Europe/London"
+              READSB_DEVICE_TYPE: "rtlsdr"
+              READSB_LAT: "52.3000"
+              READSB_LON: "-0.6900"
+              READSB_ALT: "60m"
+              READSB_RX_LOCATION_ACCURACY: "2"
+              READSB_STATS_RANGE: "true"
+
+    service:
+      main:
+        controller: main
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        annotations:
+          # Natively hooks right back into your Cilium BGP setup!
+          io.cilium/lb-ipam-ips: "10.14.100.205"
+        ports:
+          http:
+            port: 80
+          beast-out:
+            port: 30005
+
+    persistence:
+      # Pass through host raw USB buses
+      host-usb:
+        type: hostPath
+        hostPath: /dev/bus/usb
+        globalMounts:
+          - path: /dev/bus/usb
+      
+      # Keep maps/history persistent on node local storage
+      adsb-history:
+        type: hostPath
+        hostPath: /opt/adsb/globe_history
+        globalMounts:
+          - path: /var/globe_history
+      
+      adsb-graphs:
+        type: hostPath
+        hostPath: /opt/adsb/graphs
+        globalMounts:
+          - path: /var/lib/collectd

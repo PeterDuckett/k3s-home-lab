@@ -1,0 +1,47 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: emqx
+  namespace: default
+spec:
+  releaseName: emqx
+  interval: 10m
+  chart:
+    spec:
+      chart: emqx
+      version: "5.8.3"
+      sourceRef:
+        kind: HelmRepository
+        name: emqx
+        namespace: default
+      interval: 10m
+  values:
+    replicaCount: 3
+    config:
+      cluster:
+        discovery_strategy: k8s
+        k8s:
+          apiserver: "https://kubernetes.default.svc:443"
+          service_name: emqx-headless
+          address_type: hostname
+          namespace: default
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1024Mi
+      requests:
+        cpu: "200m"
+        memory: 512Mi
+    service:
+      type: LoadBalancer
+      # ⚠️ This dictates how Cilium routes traffic once it hits a node
+      externalTrafficPolicy: Cluster 
+      annotations:
+        # Tell Cilium to choose an IP specifically from your local BGP pool
+        io.cilium/lb-ipam-ips: "10.14.100.200" # 👈 Change this to your preferred static IP
+      mqtt:
+        enabled: true
+        port: 1883
+      dashboard:
+        enabled: true
+        port: 18083

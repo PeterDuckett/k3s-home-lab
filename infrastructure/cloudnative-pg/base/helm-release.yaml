@@ -1,0 +1,46 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: my-postgres-cluster
+  namespace: database # Changed to target the database namespace
+spec:
+  instances: 3
+
+  instancesImagePullPolicy: IfNotPresent
+  
+  managed:
+    services:
+      additionalServices:
+        - type: rw # "rw" means Read-Write. It will always point to the primary node.
+          serviceTemplate:
+            metadata:
+              name: my-postgres-external
+              annotations:
+                # This forces Cilium to assign the specific IP we want
+                io.cilium/lb-ipam-ips: "10.14.100.200" 
+            spec:
+              type: LoadBalancer
+
+  storage:
+    size: 15Gi
+    storageClass: longhorn-database
+
+  walStorage:
+    size: 5Gi
+    storageClass: longhorn-database
+
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          cnpg.io/cluster: my-postgres-cluster
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"

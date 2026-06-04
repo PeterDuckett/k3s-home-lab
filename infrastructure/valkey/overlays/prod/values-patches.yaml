@@ -1,0 +1,14 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: valkey
+  namespace: database
+spec:
+  values:
+    primary:
+      persistence:
+        size: 20Gi # Bump storage size for production
+    readReplicas:
+      replicaCount: 5 # More read scale
+      persistence:
+        size: 20Gi
