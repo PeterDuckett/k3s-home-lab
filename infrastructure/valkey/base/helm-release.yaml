@@ -24,8 +24,13 @@ spec:
   values:
     # Standard baseline configuration
     architecture: replication # Or 'standalone' depending on your needs
+    # TODO: auth is off for now -- this chart needs ACL config
+    # (auth.aclUsers / auth.aclConfig), not a plain password, and a
+    # real credential shouldn't be committed in plaintext to this
+    # public repo. Configure ACL auth via a Kubernetes Secret before
+    # using this for anything that needs to be secure.
     auth:
-      enabled: true
+      enabled: false
     primary:
       persistence:
         enabled: true
