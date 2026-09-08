@@ -1,0 +1,17 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: apps-downloads
+  namespace: flux-system
+spec:
+  interval: 15m
+  retryInterval: 2m
+  path: ./apps/overlays/prod/downloads
+  prune: true
+  wait: true
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: longhorn
