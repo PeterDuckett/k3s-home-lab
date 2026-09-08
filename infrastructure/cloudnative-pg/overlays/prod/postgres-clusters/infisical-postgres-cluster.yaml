@@ -1,0 +1,88 @@
+# HA Postgres for Infisical, replacing its bundled single-instance Bitnami
+# Postgres. 3 instances (1 primary + 2 streaming replicas), one per
+# control-plane node.
+#
+# storage/walStorage use the longhorn-database StorageClass (numberOfReplicas: 1,
+# strict-local) instead of the default longhorn class -- CNPG already
+# replicates at the Postgres level, so replicating the underlying volume too
+# would be redundant network I/O for no extra durability.
+#
+# bootstrap.initdb.import performs a ONE-TIME logical import (pg_dump/pg_restore)
+# from the existing Bitnami Postgres in the infisical namespace when this
+# cluster is first created. It does not touch or affect the old database, and
+# Infisical itself is not pointed at this cluster yet -- that's a separate
+# cutover once the import is verified (see infrastructure/infisical).
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: infisical-postgres
+  namespace: database
+spec:
+  instances: 3
+  instancesImagePullPolicy: IfNotPresent
+
+  affinity:
+    nodeSelector:
+      node-role.kubernetes.io/control-plane: "true"
+    tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+  managed:
+    services:
+      additional:
+        - selectorType: rw # Always points to the primary.
+          serviceTemplate:
+            metadata:
+              name: infisical-postgres-external
+              annotations:
+                # Forces Cilium to assign this specific IP.
+                io.cilium/lb-ipam-ips: "10.14.100.200"
+            spec:
+              type: LoadBalancer
+
+  storage:
+    size: 15Gi
+    storageClass: longhorn-database
+
+  walStorage:
+    size: 5Gi
+    storageClass: longhorn-database
+
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          cnpg.io/cluster: infisical-postgres
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+  bootstrap:
+    initdb:
+      database: infisicalDB
+      owner: infisical
+      import:
+        type: microservice
+        databases:
+          - infisicalDB
+        source:
+          externalCluster: old-postgres
+
+  externalClusters:
+    - name: old-postgres
+      connectionParameters:
+        host: postgresql.infisical.svc.cluster.local
+        user: infisical
+        dbname: postgres
+      password:
+        name: infisical-old-postgres-credentials
+        key: password
