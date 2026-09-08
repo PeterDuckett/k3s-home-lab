@@ -22,23 +22,24 @@ spec:
     remediation:
       retries: 3
   values:
-    # Standard baseline configuration
-    architecture: replication # Or 'standalone' depending on your needs
-    # TODO: auth is off for now -- this chart needs ACL config
+    # TODO: auth is off for now -- this chart uses ACL config
     # (auth.aclUsers / auth.aclConfig), not a plain password, and a
     # real credential shouldn't be committed in plaintext to this
-    # public repo. Configure ACL auth via a Kubernetes Secret before
-    # using this for anything that needs to be secure.
+    # public repo. Configure ACL auth via a Kubernetes Secret
+    # (auth.usersExistingSecret) before using this for anything that
+    # needs to be secure. Note: if auth is ever enabled, the
+    # replicationUser ("default" below) must be defined in
+    # auth.aclUsers with replication permissions (+psync +replconf +ping).
     auth:
       enabled: false
-    primary:
+
+    # Single StatefulSet, (replica.replicas + 1) pods total -- pod-0
+    # is the master, the rest replicate from it. There is no separate
+    # "primary"/"readReplicas" config in this chart, unlike Bitnami's.
+    replica:
+      enabled: true
+      replicas: 2
+      replicationUser: "default"
       persistence:
-        enabled: true
-        storageClass: "longhorn"
-        size: 8Gi
-    readReplicas:
-      replicaCount: 3
-      persistence:
-        enabled: true
         storageClass: "longhorn"
         size: 8Gi
