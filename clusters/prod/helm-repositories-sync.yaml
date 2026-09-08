@@ -1,18 +1,13 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: apps-downloads
+  name: infrastructure-helm-repositories
   namespace: flux-system
 spec:
-  interval: 15m
+  interval: 1h
   retryInterval: 2m
-  path: ./apps/overlays/prod/downloads
+  path: ./infrastructure/helm-repositories
   prune: true
-  wait: true
-  timeout: 5m
   sourceRef:
     kind: GitRepository
     name: flux-system
-  dependsOn:
-    - name: longhorn
-    - name: infrastructure-helm-repositories
