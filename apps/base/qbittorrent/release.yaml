@@ -1,17 +1,51 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: qbittorrent
-  namespace: system
+  namespace: downloads
 spec:
   releaseName: qbittorrent
   chart:
     spec:
-      chart: qbittorrent
+      chart: app-template
+      # bjw-s-labs/helm-charts app-template. Verify this is still current
+      # when Flux reconciles — pinned to major 3 as of early 2026.
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: lscr.io/linuxserver/qbittorrent
+              tag: latest
+            env:
+              PUID: "1000"
+              PGID: "1000"
+              TZ: "Etc/UTC"
+              WEBUI_PORT: "8080"
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: 8080
+    persistence:
+      config:
+        existingClaim: qbittorrent-config
+        globalMounts:
+          - path: /config
