@@ -1,13 +1,6 @@
 # Untrusted-by-browsers test certs, very high rate limits -- use this one
 # while testing the DNS-01 solver end to end before switching to
 # letsencrypt-prod.yaml.
-#
-# `email` is deliberately omitted here (it's an +optional field on
-# cert-manager's ACMEIssuer type). It's set live only, via a separate
-# field-manager, applied directly to the cluster rather than committed --
-# same reasoning as cloudflare-api-token-secret. Since Flux's own applies
-# never mention this field, Server-Side Apply won't touch or revert it on
-# reconcile the way it would if a placeholder value were committed here.
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
@@ -15,6 +8,7 @@ metadata:
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: peter.james.duckett+letsencrypt@googlemail.com
     privateKeySecretRef:
       name: letsencrypt-staging-account-key
     solvers:
