@@ -1,46 +1,27 @@
-apiVersion: postgresql.cnpg.io/v1
-kind: Cluster
+# The actual CNPG operator install. The Postgres Cluster resources it manages
+# live separately under overlays/prod/postgres-clusters, since they depend on
+# the CRDs this HelmRelease installs and must be reconciled afterwards.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
 metadata:
-  name: my-postgres-cluster
-  namespace: database # Changed to target the database namespace
+  name: cloudnative-pg
+  namespace: flux-system
 spec:
-  instances: 3
-
-  instancesImagePullPolicy: IfNotPresent
-  
-  managed:
-    services:
-      additionalServices:
-        - type: rw # "rw" means Read-Write. It will always point to the primary node.
-          serviceTemplate:
-            metadata:
-              name: my-postgres-external
-              annotations:
-                # This forces Cilium to assign the specific IP we want
-                io.cilium/lb-ipam-ips: "10.14.100.200" 
-            spec:
-              type: LoadBalancer
-
-  storage:
-    size: 15Gi
-    storageClass: longhorn-database
-
-  walStorage:
-    size: 5Gi
-    storageClass: longhorn-database
-
-  topologySpreadConstraints:
-    - maxSkew: 1
-      topologyKey: kubernetes.io/hostname
-      whenUnsatisfiable: DoNotSchedule
-      labelSelector:
-        matchLabels:
-          cnpg.io/cluster: my-postgres-cluster
-
-  resources:
-    requests:
-      memory: "512Mi"
-      cpu: "500m"
-    limits:
-      memory: "1Gi"
-      cpu: "1"
+  interval: 30m
+  chart:
+    spec:
+      chart: cloudnative-pg
+      version: "0.29.x"
+      sourceRef:
+        kind: HelmRepository
+        name: cloudnative-pg
+        namespace: flux-system
+      interval: 1h
+  targetNamespace: cnpg-system
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
