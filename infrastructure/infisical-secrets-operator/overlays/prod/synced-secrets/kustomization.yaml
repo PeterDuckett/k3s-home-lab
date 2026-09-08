@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - doplarr-secret.yaml
   - notifiarr-secret.yaml
+  - cloudflare-api-token.yaml

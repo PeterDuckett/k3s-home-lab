@@ -1,0 +1,30 @@
+# Syncs the Cloudflare API token used by cert-manager's DNS-01 solver
+# (see infrastructure/cert-manager/overlays/prod/cluster-issuers) from
+# Infisical instead of being a manually-applied plain Secret. This token
+# can edit DNS for the whole zone, so it never touches git.
+apiVersion: secrets.infisical.com/v1beta1
+kind: InfisicalStaticSecret
+metadata:
+  name: cloudflare-api-token-sync
+  namespace: cert-manager
+spec:
+  infisicalAuthRef:
+    name: k3s-operator
+    namespace: infisical
+  syncOptions:
+    refreshInterval: 60s
+  sources:
+    - projectId: 95bb0597-b6d2-4129-9145-8c46a1f9bbf9
+      environmentSlug: prod
+      secretPath: /CertManager
+  targets:
+    - name: cloudflare-api-token-secret
+      namespace: cert-manager
+      kind: Secret
+      creationPolicy: Owner
+      # Remap the Infisical key (CLOUDFLARE_API_TOKEN) to the key name the
+      # ClusterIssuers' apiTokenSecretRef actually expects (api-token).
+      template:
+        engineVersion: v1
+        data:
+          api-token: "{{ .CLOUDFLARE_API_TOKEN.Value }}"
