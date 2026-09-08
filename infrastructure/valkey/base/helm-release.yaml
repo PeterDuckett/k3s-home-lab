@@ -9,11 +9,18 @@ spec:
   chart:
     spec:
       chart: valkey
-      version: "1.x.x" # Adjust to your targeted chart version
+      version: "0.12.x"
       sourceRef:
         kind: HelmRepository
         name: valkey
         namespace: flux-system
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
   values:
     # Standard baseline configuration
     architecture: replication # Or 'standalone' depending on your needs
