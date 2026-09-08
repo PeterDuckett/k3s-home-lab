@@ -8,5 +8,5 @@ reclaimPolicy: Delete
 volumeBindingMode: Immediate
 parameters:
   numberOfReplicas: "1"
-  diskSelector: "ssd"
+  diskSelector: "ssd-downloads"
   staleReplicaTimeout: "30"
