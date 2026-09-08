@@ -1,0 +1,30 @@
+# Installs the CRDs (InfisicalConnection/InfisicalAuth/InfisicalStaticSecret/etc)
+# and the controller that syncs secrets from Infisical into native K8s Secrets.
+# Runs in the infisical namespace, alongside the Infisical instance itself.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: infisical-secrets-operator
+  namespace: flux-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: secrets-operator
+      version: "0.11.x"
+      sourceRef:
+        kind: HelmRepository
+        name: infisical
+        namespace: flux-system
+      interval: 1h
+  targetNamespace: infisical
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Fallback default when a CRD doesn't specify its own connection address --
+    # points at the self-hosted instance's internal Service, not app.infisical.com.
+    hostAPI: "http://infisical-infisical-infisical-standalone-infisical.infisical.svc.cluster.local:8080/api"

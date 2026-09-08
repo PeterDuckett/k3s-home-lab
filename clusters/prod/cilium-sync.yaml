@@ -106,6 +106,39 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  name: infrastructure-infisical-secrets-operator
+  namespace: flux-system
+spec:
+  interval: 30m
+  retryInterval: 2m
+  path: ./infrastructure/infisical-secrets-operator/overlays/prod
+  prune: true
+  wait: true # CRDs + operator must be ready before any InfisicalConnection/InfisicalAuth CR can be applied
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-infisical-secrets-operator-auth
+  namespace: flux-system
+spec:
+  interval: 30m
+  retryInterval: 2m
+  path: ./infrastructure/infisical-secrets-operator/overlays/prod/auth
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: infrastructure-infisical-secrets-operator # operator + CRDs
+    - name: infisical # target Infisical instance must exist
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
   name: infrastructure-cloudnative-pg-clusters
   namespace: flux-system
 spec:

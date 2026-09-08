@@ -1,0 +1,36 @@
+# How the operator reaches our self-hosted Infisical instance, and which
+# machine identity it authenticates as. Split into their own Kustomization
+# (see clusters/prod/cilium-sync.yaml) since they need the operator's CRDs
+# to already exist.
+#
+# The actual credentials (universal-auth-credentials Secret, clientId/clientSecret)
+# are applied live only, not committed here -- same reasoning as the Cloudflare
+# API token: this identity can read every secret in the k3s-home-lab project,
+# not worth putting in a public repo.
+apiVersion: secrets.infisical.com/v1beta1
+kind: InfisicalConnection
+metadata:
+  name: self-hosted
+  namespace: infisical
+spec:
+  address: http://infisical-infisical-infisical-standalone-infisical.infisical.svc.cluster.local:8080
+---
+apiVersion: secrets.infisical.com/v1beta1
+kind: InfisicalAuth
+metadata:
+  name: k3s-operator
+  namespace: infisical
+spec:
+  infisicalConnectionRef:
+    name: self-hosted
+    namespace: infisical
+  method: universal
+  universal:
+    clientIdRef:
+      name: universal-auth-credentials
+      namespace: infisical
+      key: clientId
+    clientSecretRef:
+      name: universal-auth-credentials
+      namespace: infisical
+      key: clientSecret
