@@ -55,9 +55,27 @@ spec:
   retryInterval: 2m
   path: ./infrastructure/cert-manager/overlays/prod
   prune: true
+  wait: true # CRDs must exist before the ClusterIssuers Kustomization can apply
+  timeout: 5m
   sourceRef:
     kind: GitRepository
     name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager-cluster-issuers
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 2m
+  path: ./infrastructure/cert-manager/overlays/prod/cluster-issuers
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: cert-manager
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
