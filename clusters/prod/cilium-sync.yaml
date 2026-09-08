@@ -151,7 +151,10 @@ spec:
     name: flux-system
   dependsOn:
     - name: infrastructure-infisical-secrets-operator-auth
-    - name: apps-downloads # target namespace/Deployments must exist
+    # NOT apps-downloads: that Kustomization's health check never passes
+    # while doplarr/notifiarr are failing -- which they will be until this
+    # very sync creates their secrets. Circular. The downloads namespace
+    # already exists regardless of whether every app in it is healthy.
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
