@@ -16,6 +16,9 @@ spec:
   targetNamespace: infisical
   install:
     createNamespace: true
+  dependsOn:
+    - name: valkey
+      namespace: database
   values:
 
     infisical:
@@ -62,3 +65,10 @@ spec:
           - key: "node-role.kubernetes.io/control-plane"
             operator: "Exists"
             effect: "NoSchedule"
+
+    # 3. Cache (Redis-compatible) -- use the shared Valkey instance in the
+    # database namespace instead of the chart's bundled Redis. The actual
+    # REDIS_URL pointing at Valkey is set in overlays/prod/secrets.yaml
+    # (the chart pulls it in via envFrom on the infisical-secrets Secret).
+    redis:
+      enabled: false
