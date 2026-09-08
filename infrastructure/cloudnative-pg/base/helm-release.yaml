@@ -17,9 +17,12 @@ spec:
         name: cloudnative-pg
         namespace: flux-system
       interval: 1h
-  targetNamespace: cnpg-system
+  # Runs in database alongside Valkey and the Postgres Cluster it manages,
+  # rather than a dedicated cnpg-system namespace -- the operator itself
+  # watches Cluster CRs cluster-wide regardless of its own namespace, so a
+  # separate namespace isn't required.
+  targetNamespace: database
   install:
-    createNamespace: true
     remediation:
       retries: 3
   upgrade:
