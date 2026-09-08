@@ -4,4 +4,4 @@ kind: Kustomization
 resources:
   - longhorn-cnpg-storageclass.yaml
   - postgres-migration-secret.yaml
-  - infisical-postgres-cluster.yaml
+  - postgres-cluster.yaml

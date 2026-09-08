@@ -1,6 +1,9 @@
-# HA Postgres for Infisical, replacing its bundled single-instance Bitnami
-# Postgres. 3 instances (1 primary + 2 streaming replicas), one per
-# control-plane node.
+# Shared HA Postgres cluster in the database namespace (alongside Valkey).
+# Bootstrapped for Infisical, replacing its bundled single-instance Bitnami
+# Postgres, but not exclusive to it -- other apps can get their own database
+# added to this same cluster later rather than each running their own
+# single-instance Postgres. 3 instances (1 primary + 2 streaming replicas),
+# one per control-plane node.
 #
 # storage/walStorage use the longhorn-database StorageClass (numberOfReplicas: 1,
 # strict-local) instead of the default longhorn class -- CNPG already
@@ -8,14 +11,15 @@
 # would be redundant network I/O for no extra durability.
 #
 # bootstrap.initdb.import performs a ONE-TIME logical import (pg_dump/pg_restore)
-# from the existing Bitnami Postgres in the infisical namespace when this
-# cluster is first created. It does not touch or affect the old database, and
-# Infisical itself is not pointed at this cluster yet -- that's a separate
-# cutover once the import is verified (see infrastructure/infisical).
+# of Infisical's existing data from the still-running Bitnami Postgres in the
+# infisical namespace when this cluster is first created. It does not touch
+# or affect the old database, and Infisical itself is not pointed at this
+# cluster yet -- that's a separate cutover once the import is verified (see
+# infrastructure/infisical).
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: infisical-postgres
+  name: postgres
   namespace: database
 spec:
   instances: 3
@@ -35,7 +39,7 @@ spec:
         - selectorType: rw # Always points to the primary.
           serviceTemplate:
             metadata:
-              name: infisical-postgres-external
+              name: postgres-external
               annotations:
                 # Forces Cilium to assign this specific IP.
                 io.cilium/lb-ipam-ips: "10.14.100.200"
@@ -56,7 +60,7 @@ spec:
       whenUnsatisfiable: DoNotSchedule
       labelSelector:
         matchLabels:
-          cnpg.io/cluster: infisical-postgres
+          cnpg.io/cluster: postgres
 
   resources:
     requests:
