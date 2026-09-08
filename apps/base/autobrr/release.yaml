@@ -1,5 +1,5 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: autobrr
@@ -8,10 +8,41 @@ spec:
   releaseName: autobrr
   chart:
     spec:
-      chart: autobrr
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # autobrr is not a linuxserver.io image -- no PUID/PGID, it's the
+    # official ghcr.io/autobrr/autobrr image. It generates its own
+    # config.toml on first run into /config if none exists, and you
+    # complete setup (admin account) via the web UI on first visit.
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: ghcr.io/autobrr/autobrr
+              tag: latest
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: 7474
+    persistence:
+      config:
+        existingClaim: autobrr-config
+        globalMounts:
+          - path: /config

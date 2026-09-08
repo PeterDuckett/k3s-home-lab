@@ -4,8 +4,17 @@ resources:
   - ../../../base/downloads-storage
   - qbittorrent
   - nzbget
-  # The remaining app dirs in this folder (autobrr, bazarr, doplarr, homarr,
-  # jackett, lidarr, maintainerr, mylar, notifiarr, organizrr, overseerr,
-  # postarr, prowlarr, radarr, readarr, recyclarr, sonarr, tdarr, wizarr)
-  # still contain the placeholder kustomization.yaml copied from the traefik
-  # overlay and are not wired up yet — out of scope for this change.
+  - autobrr
+  - bazarr
+  - lidarr
+  - prowlarr
+  - radarr
+  - readarr
+  - wizarr
+  # postarr intentionally left out -- no official/trustworthy image
+  # source found, needs clarification before deploying.
+  #
+  # The remaining app dirs in this folder (doplarr, homarr, jackett,
+  # maintainerr, mylar, notifiarr, organizrr, overseerr, recyclarr,
+  # sonarr, tdarr) still contain the placeholder kustomization.yaml
+  # copied from the traefik overlay and are not wired up yet.

@@ -1,17 +1,50 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: readarr
-  namespace: system
+  namespace: downloads
 spec:
   releaseName: readarr
   chart:
     spec:
-      chart: readarr
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: lscr.io/linuxserver/readarr
+              # readarr has never had a stable upstream release --
+              # only nightly/develop builds exist, there is no :latest
+              tag: develop
+            env:
+              PUID: "1000"
+              PGID: "1000"
+              TZ: "Etc/UTC"
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: 8787
+    persistence:
+      config:
+        existingClaim: readarr-config
+        globalMounts:
+          - path: /config
