@@ -11,10 +11,18 @@ resources:
   - radarr
   - readarr
   - wizarr
+  - sonarr
+  - overseerr
+  - notifiarr
+  - recyclarr
+  - doplarr
+  - mylar
+  - tdarr
+  - plaxt
+  - maintainerr
   # postarr intentionally left out -- no official/trustworthy image
   # source found, needs clarification before deploying.
   #
-  # The remaining app dirs in this folder (doplarr, homarr, jackett,
-  # maintainerr, mylar, notifiarr, organizrr, overseerr, recyclarr,
-  # sonarr, tdarr) still contain the placeholder kustomization.yaml
-  # copied from the traefik overlay and are not wired up yet.
+  # The remaining app dirs in this folder (homarr, jackett, organizrr)
+  # still contain the placeholder kustomization.yaml copied from the
+  # traefik overlay and are not wired up yet.

@@ -1,17 +1,50 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: recyclarr
-  namespace: system
+  namespace: downloads
 spec:
   releaseName: recyclarr
   chart:
     spec:
-      chart: recyclarr
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # recyclarr is a config-sync CLI tool (TRaSH guides -> Sonarr/
+    # Radarr), not a web app -- no Service/port. CRON_SCHEDULE keeps
+    # it running continuously and syncing on a schedule instead of
+    # running once and exiting.
+    #
+    # It won't do anything useful until you populate
+    # /config/recyclarr.yml with your real Sonarr/Radarr URLs and API
+    # keys -- exec into the pod once it's up to create it, or copy one
+    # in via kubectl cp.
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: ghcr.io/recyclarr/recyclarr
+              tag: "7"
+            env:
+              TZ: "Etc/UTC"
+              CRON_SCHEDULE: "0 */6 * * *"
+    persistence:
+      config:
+        existingClaim: recyclarr-config
+        globalMounts:
+          - path: /config

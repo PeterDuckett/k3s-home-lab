@@ -1,17 +1,71 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: doplarr
-  namespace: system
+  namespace: downloads
 spec:
   releaseName: doplarr
   chart:
     spec:
-      chart: doplarr
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Discord bot -- no web UI, so no Service. Needs a real Discord
+    # bot token + Sonarr/Radarr URLs+keys via the doplarr-secret Secret
+    # you create yourself (kubectl or Infisical). Will fail cleanly
+    # with "secret not found" until then.
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: lscr.io/linuxserver/doplarr
+              tag: latest
+            env:
+              PUID: "1000"
+              PGID: "1000"
+              TZ: "Etc/UTC"
+              DISCORD_TOKEN:
+                valueFrom:
+                  secretKeyRef:
+                    name: doplarr-secret
+                    key: DISCORD_TOKEN
+              RADARR_URL:
+                valueFrom:
+                  secretKeyRef:
+                    name: doplarr-secret
+                    key: RADARR_URL
+              RADARR_API_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: doplarr-secret
+                    key: RADARR_API_KEY
+              SONARR_URL:
+                valueFrom:
+                  secretKeyRef:
+                    name: doplarr-secret
+                    key: SONARR_URL
+              SONARR_API_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: doplarr-secret
+                    key: SONARR_API_KEY
+    persistence:
+      config:
+        existingClaim: doplarr-config
+        globalMounts:
+          - path: /config
