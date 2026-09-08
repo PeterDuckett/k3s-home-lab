@@ -19,6 +19,7 @@ spec:
   dependsOn:
     - name: valkey
       namespace: database
+    - name: cloudnative-pg
   values:
 
     infisical:
@@ -48,23 +49,13 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
 
-    # 2. Database Settings (Built-in Postgres)
+    # 2. Database (Postgres) -- use the shared HA CloudNativePG cluster in the
+    # database namespace instead of the chart's bundled single-instance
+    # Postgres. The actual DB_CONNECTION_URI pointing at it is set in
+    # overlays/prod/secrets.yaml (the chart pulls it in via envFrom on the
+    # infisical-secrets Secret, same pattern as REDIS_URL/Valkey above).
     postgresql:
-      enabled: true
-      primary:
-        # Instruct Postgres to use your fast Longhorn NVMe storage class
-        persistence:
-          enabled: true
-          storageClass: "longhorn" 
-          size: 10Gi
-        
-        # Lock the database execution onto the masters alongside the storage
-        nodeSelector:
-          node-role.kubernetes.io/control-plane: "true"
-        tolerations:
-          - key: "node-role.kubernetes.io/control-plane"
-            operator: "Exists"
-            effect: "NoSchedule"
+      enabled: false
 
     # 3. Cache (Redis-compatible) -- use the shared Valkey instance in the
     # database namespace instead of the chart's bundled Redis. The actual
