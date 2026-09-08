@@ -37,9 +37,6 @@ spec:
               PUID: "1000"
               PGID: "1000"
               TZ: "Etc/UTC"
-    defaultPodOptions:
-      nodeSelector:
-        kubernetes.io/hostname: node-2-3
     service:
       main:
         controller: main
@@ -54,7 +51,3 @@ spec:
         size: 1Gi
         globalMounts:
           - path: /config
-      downloads:
-        existingClaim: downloads-ssd
-        globalMounts:
-          - path: /downloads
