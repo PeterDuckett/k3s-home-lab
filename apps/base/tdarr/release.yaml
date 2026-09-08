@@ -1,17 +1,66 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: tdarr
-  namespace: system
+  namespace: downloads
 spec:
   releaseName: tdarr
   chart:
     spec:
-      chart: tdarr
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Not a linuxserver.io image, but does support PUID/PGID/UMASK.
+    # Ports/paths are the well-known Tdarr defaults -- I couldn't get
+    # a live docs fetch to confirm this pass, double-check against
+    # https://docs.tdarr.io before relying on it.
+    #
+    # Only /app/server (its own db/config) is wired up. /media (your
+    # actual library) and /temp (transcode scratch space) are
+    # intentionally NOT mounted yet -- add them once you know which
+    # storage you want it reading from/writing to; it's a media
+    # transcoder, so this needs real thought about where your library
+    # actually lives before pointing it at anything.
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: haveagitgat/tdarr
+              tag: latest
+            env:
+              PUID: "1000"
+              PGID: "1000"
+              UMASK: "002"
+              TZ: "Etc/UTC"
+              serverIP: "0.0.0.0"
+              serverPort: "8266"
+              webUIPort: "8265"
+              internalNode: "true"
+    service:
+      main:
+        controller: main
+        ports:
+          webui:
+            port: 8265
+          server:
+            port: 8266
+    persistence:
+      server:
+        existingClaim: tdarr-server-config
+        globalMounts:
+          - path: /app/server

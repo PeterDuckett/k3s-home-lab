@@ -1,17 +1,56 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: notifiarr
-  namespace: system
+  namespace: downloads
 spec:
   releaseName: notifiarr
   chart:
     spec:
-      chart: notifiarr
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Not a linuxserver.io image -- no PUID/PGID.
+    # DN_API_KEY comes from your notifiarr.com account -- create the
+    # notifiarr-secret Secret yourself (kubectl or Infisical) with a
+    # DN_API_KEY key before this will actually authenticate. It will
+    # fail cleanly with "secret not found" until then.
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: golift/notifiarr
+              tag: latest
+            env:
+              TZ: "Etc/UTC"
+              DN_API_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: notifiarr-secret
+                    key: DN_API_KEY
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: 5454
+    persistence:
+      config:
+        existingClaim: notifiarr-config
+        globalMounts:
+          - path: /config

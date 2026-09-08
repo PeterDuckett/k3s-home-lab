@@ -1,17 +1,53 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: plaxt
-  namespace: system
+  namespace: downloads
 spec:
   releaseName: plaxt
   chart:
     spec:
-      chart: plaxt
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # ghostserverd/plaxt -- the most-used community Plaxt image
+    # (30k+ pulls vs next-highest at 700), not a linuxserver.io image.
+    # DATA_DIR / mount path here is a lower-confidence guess -- verify
+    # once running that it's actually persisting the user keystore
+    # to /data rather than somewhere else in the container.
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: ghostserverd/plaxt
+              tag: latest
+            env:
+              TZ: "Etc/UTC"
+              PORT: "8000"
+              DATA_DIR: "/data"
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: 8000
+    persistence:
+      data:
+        existingClaim: plaxt-data
+        globalMounts:
+          - path: /data

@@ -1,17 +1,47 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: maintainerr
-  namespace: system
+  namespace: downloads
 spec:
   releaseName: maintainerr
   chart:
     spec:
-      chart: maintainerr
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Not a linuxserver.io image -- no PUID/PGID.
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: ghcr.io/jorenn92/maintainerr
+              tag: latest
+            env:
+              TZ: "Etc/UTC"
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: 6246
+    persistence:
+      config:
+        existingClaim: maintainerr-config
+        globalMounts:
+          - path: /opt/data
