@@ -8,10 +8,8 @@ spec:
   # Increase timeouts for BPF compilation and proxy interactions
     bpf:
       compileTimeout: "15m"
-    ipv4:
-      enabled: true
-    ipv6:
-      enabled: true
-    ipam:
-      operator:
-        clusterPoolIPv6PodCIDRList: ["2001:db8:42::/56"]
+    # NOTE: ipv6 intentionally NOT enabled here -- the worker nodes'
+    # Raspberry Pi kernels lack BTF (/sys/kernel/btf/vmlinux), which
+    # breaks Cilium's eBPF CO-RE compilation for IPv6 (SNAT verifier
+    # failure, cilium-envoy abort/core-dump). IPv4-only until the
+    # kernels ship proper BTF support.
