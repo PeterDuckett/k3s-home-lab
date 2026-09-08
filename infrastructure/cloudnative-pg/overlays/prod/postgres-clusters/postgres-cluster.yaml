@@ -23,7 +23,7 @@ metadata:
   namespace: database
 spec:
   instances: 3
-  instancesImagePullPolicy: IfNotPresent
+  imagePullPolicy: IfNotPresent
 
   affinity:
     nodeSelector:
