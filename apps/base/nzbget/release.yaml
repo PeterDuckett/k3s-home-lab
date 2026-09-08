@@ -45,9 +45,6 @@ spec:
             port: 6789
     persistence:
       config:
-        type: persistentVolumeClaim
-        storageClass: longhorn
-        accessMode: ReadWriteOnce
-        size: 1Gi
+        existingClaim: nzbget-config
         globalMounts:
           - path: /config
