@@ -5,7 +5,13 @@ metadata:
   namespace: kube-system
 spec:
   values:
-  # just a test
   # Increase timeouts for BPF compilation and proxy interactions
     bpf:
       compileTimeout: "15m"
+    ipv4:
+      enabled: true
+    ipv6:
+      enabled: true
+    ipam:
+      operator:
+        clusterPoolIPv6PodCIDRList: ["2001:db8:42::/56"]
