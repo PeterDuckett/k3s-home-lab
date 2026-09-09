@@ -46,7 +46,7 @@ spec:
                 valueFrom:
                   secretKeyRef:
                     name: flightradar24-secret
-                    key: SHARING_KEY
+                    key: FR24KEY
     service:
       main:
         controller: main
