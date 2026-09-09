@@ -45,5 +45,5 @@ spec:
               CLIENTKEY:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: ADSBHUB_CLIENTKEY
+                    name: adsbhub-secret
+                    key: CLIENTKEY

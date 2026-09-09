@@ -45,20 +45,20 @@ spec:
               SHARING_KEY:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: AIRNAVRADAR_SHARING_KEY
+                    name: airnavradar-secret
+                    key: SHARING_KEY
               LAT:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LAT
+                    name: airnavradar-secret
+                    key: LATITUDE
               LONG:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LONG
+                    name: airnavradar-secret
+                    key: LONGITUDE
               ALT:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_ALT_M
+                    name: airnavradar-secret
+                    key: ALTITUDE_M

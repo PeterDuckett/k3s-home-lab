@@ -45,8 +45,8 @@ spec:
               FR24KEY:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FR24_SHARING_KEY
+                    name: flightradar24-secret
+                    key: SHARING_KEY
     service:
       main:
         controller: main

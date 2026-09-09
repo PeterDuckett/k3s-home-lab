@@ -48,8 +48,8 @@ spec:
               FEEDER_ID:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: PIAWARE_FEEDER_ID
+                    name: piaware-secret
+                    key: FEEDER_ID
     service:
       main:
         controller: main

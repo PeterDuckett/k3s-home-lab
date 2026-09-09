@@ -45,25 +45,25 @@ spec:
               LAT:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LAT
+                    name: opensky-network-secret
+                    key: LATITUDE
               LONG:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LONG
+                    name: opensky-network-secret
+                    key: LONGITUDE
               ALT:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_ALT_M
+                    name: opensky-network-secret
+                    key: ALTITUDE_M
               OPENSKY_USERNAME:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: OPENSKY_USERNAME
+                    name: opensky-network-secret
+                    key: USERNAME
               OPENSKY_SERIAL:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: OPENSKY_SERIAL
+                    name: opensky-network-secret
+                    key: SERIAL

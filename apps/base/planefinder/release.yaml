@@ -44,18 +44,18 @@ spec:
               SHARECODE:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: PLANEFINDER_SHARECODE
+                    name: planefinder-secret
+                    key: SHARECODE
               LAT:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LAT
+                    name: planefinder-secret
+                    key: LATITUDE
               LONG:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LONG
+                    name: planefinder-secret
+                    key: LONGITUDE
     service:
       main:
         controller: main

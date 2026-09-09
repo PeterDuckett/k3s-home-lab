@@ -57,43 +57,43 @@ spec:
               READSB_LAT:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LAT
+                    name: ultrafeeder-secret
+                    key: LATITUDE
               READSB_LON:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LONG
+                    name: ultrafeeder-secret
+                    key: LONGITUDE
               READSB_ALT:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_ALT
+                    name: ultrafeeder-secret
+                    key: ALTITUDE
               TAR1090_DEFAULTCENTERLAT:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LAT
+                    name: ultrafeeder-secret
+                    key: LATITUDE
               TAR1090_DEFAULTCENTERLON:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: FEEDER_LONG
+                    name: ultrafeeder-secret
+                    key: LONGITUDE
               # ---- Station identity (from Infisical: /flight-tracking) ----
               UUID:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
-                    key: ULTRAFEEDER_UUID
+                    name: ultrafeeder-secret
+                    key: UUID
               MLAT_USER:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
+                    name: ultrafeeder-secret
                     key: MLAT_USER
               TAR1090_PAGETITLE:
                 valueFrom:
                   secretKeyRef:
-                    name: flight-tracking-secrets
+                    name: ultrafeeder-secret
                     key: MLAT_USER
               # ---- Native aggregator feeds + MLAT ----
               # Free community aggregators fed directly by ultrafeeder. The six
