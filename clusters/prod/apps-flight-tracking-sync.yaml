@@ -1,0 +1,20 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: apps-flight-tracking
+  namespace: flux-system
+spec:
+  interval: 15m
+  retryInterval: 2m
+  path: ./apps/overlays/prod/flight-tracking
+  prune: true
+  wait: true
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: infrastructure-helm-repositories
+    # Feeder pods stay NotReady until flight-tracking-secrets is populated in
+    # Infisical, so this Kustomization will report NotReady until then -- same
+    # expected behaviour as apps-downloads with doplarr/notifiarr.

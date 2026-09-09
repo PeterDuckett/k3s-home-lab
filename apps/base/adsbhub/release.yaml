@@ -1,17 +1,49 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: adguard-home
-  namespace: system
+  name: adsbhub
+  namespace: flight-tracking
 spec:
-  releaseName: adguard-home
+  releaseName: adsbhub
   chart:
     spec:
-      chart: adguard-home
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      main:
+        type: deployment
+        replicas: 1
+        pod:
+          annotations:
+            reloader.stakater.com/auto: "true"
+        containers:
+          main:
+            image:
+              repository: ghcr.io/sdr-enthusiasts/docker-adsbhub
+              tag: latest
+              pullPolicy: Always
+            env:
+              TZ: "Europe/London"
+              # ADSBHub consumes SBS/BaseStation (30003), not Beast.
+              SBSHOST: "ultrafeeder"
+              SBSPORT: "30003"
+              CLIENTKEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: adsbhub-secret
+                    key: CLIENTKEY

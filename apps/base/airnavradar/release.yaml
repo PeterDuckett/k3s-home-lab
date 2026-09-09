@@ -2,10 +2,10 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: piaware
+  name: airnavradar
   namespace: flight-tracking
 spec:
-  releaseName: piaware
+  releaseName: airnavradar
   chart:
     spec:
       chart: app-template
@@ -34,25 +34,31 @@ spec:
         containers:
           main:
             image:
-              repository: ghcr.io/sdr-enthusiasts/docker-piaware
+              # AirNav Radar (formerly RadarBox).
+              repository: ghcr.io/sdr-enthusiasts/docker-airnavradar
               tag: latest
               pullPolicy: Always
             env:
               TZ: "Europe/London"
-              # Consume Beast from ultrafeeder instead of a local SDR.
-              RECEIVER_TYPE: "relay"
               BEASTHOST: "ultrafeeder"
               BEASTPORT: "30005"
-              ALLOW_MLAT: "yes"
-              MLAT_RESULTS: "yes"
-              FEEDER_ID:
+              SHARING_KEY:
                 valueFrom:
                   secretKeyRef:
-                    name: piaware-secret
-                    key: FEEDER_ID
-    service:
-      main:
-        controller: main
-        ports:
-          http:
-            port: 8080
+                    name: airnavradar-secret
+                    key: SHARING_KEY
+              LAT:
+                valueFrom:
+                  secretKeyRef:
+                    name: airnavradar-secret
+                    key: LATITUDE
+              LONG:
+                valueFrom:
+                  secretKeyRef:
+                    name: airnavradar-secret
+                    key: LONGITUDE
+              ALT:
+                valueFrom:
+                  secretKeyRef:
+                    name: airnavradar-secret
+                    key: ALTITUDE_M

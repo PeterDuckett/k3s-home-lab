@@ -1,17 +1,55 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: flightradar24
-  namespace: system
+  namespace: flight-tracking
 spec:
   releaseName: flightradar24
   chart:
     spec:
-      chart: flightradar24
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      main:
+        type: deployment
+        replicas: 1
+        pod:
+          annotations:
+            reloader.stakater.com/auto: "true"
+        containers:
+          main:
+            image:
+              repository: ghcr.io/sdr-enthusiasts/docker-flightradar24
+              tag: latest
+              pullPolicy: Always
+            env:
+              TZ: "Europe/London"
+              BEASTHOST: "ultrafeeder"
+              BEASTPORT: "30005"
+              MLAT: "yes"
+              FR24KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: flightradar24-secret
+                    key: SHARING_KEY
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: 8754
