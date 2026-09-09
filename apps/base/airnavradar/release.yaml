@@ -2,10 +2,10 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: flightradar24
+  name: airnavradar
   namespace: flight-tracking
 spec:
-  releaseName: flightradar24
+  releaseName: airnavradar
   chart:
     spec:
       chart: app-template
@@ -34,22 +34,31 @@ spec:
         containers:
           main:
             image:
-              repository: ghcr.io/sdr-enthusiasts/docker-flightradar24
+              # AirNav Radar (formerly RadarBox).
+              repository: ghcr.io/sdr-enthusiasts/docker-airnavradar
               tag: latest
               pullPolicy: Always
             env:
               TZ: "Europe/London"
               BEASTHOST: "ultrafeeder"
               BEASTPORT: "30005"
-              MLAT: "yes"
-              FR24KEY:
+              SHARING_KEY:
                 valueFrom:
                   secretKeyRef:
                     name: flight-tracking-secrets
-                    key: FR24_SHARING_KEY
-    service:
-      main:
-        controller: main
-        ports:
-          http:
-            port: 8754
+                    key: AIRNAVRADAR_SHARING_KEY
+              LAT:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: FEEDER_LAT
+              LONG:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: FEEDER_LONG
+              ALT:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: FEEDER_ALT_M

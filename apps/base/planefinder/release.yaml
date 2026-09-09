@@ -1,17 +1,64 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: planefinder
-  namespace: system
+  namespace: flight-tracking
 spec:
   releaseName: planefinder
   chart:
     spec:
-      chart: planefinder
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      main:
+        type: deployment
+        replicas: 1
+        pod:
+          annotations:
+            reloader.stakater.com/auto: "true"
+        containers:
+          main:
+            image:
+              repository: ghcr.io/sdr-enthusiasts/docker-planefinder
+              tag: latest
+              pullPolicy: Always
+            env:
+              TZ: "Europe/London"
+              BEASTHOST: "ultrafeeder"
+              BEASTPORT: "30005"
+              SHARECODE:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: PLANEFINDER_SHARECODE
+              LAT:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: FEEDER_LAT
+              LONG:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: FEEDER_LONG
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: 30053

@@ -1,0 +1,11 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ultrafeeder
+  namespace: flight-tracking
+spec:
+  values:
+    # Pin to the Pi5 with the RTL-SDR dongle physically attached.
+    defaultPodOptions:
+      nodeSelector:
+        kubernetes.io/hostname: node-sdr

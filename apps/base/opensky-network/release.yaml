@@ -1,17 +1,69 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: opensky-network
-  namespace: system
+  namespace: flight-tracking
 spec:
   releaseName: opensky-network
   chart:
     spec:
-      chart: opensky-network
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      main:
+        type: deployment
+        replicas: 1
+        pod:
+          annotations:
+            reloader.stakater.com/auto: "true"
+        containers:
+          main:
+            image:
+              repository: ghcr.io/sdr-enthusiasts/docker-opensky-network
+              tag: latest
+              pullPolicy: Always
+            env:
+              TZ: "Europe/London"
+              BEASTHOST: "ultrafeeder"
+              BEASTPORT: "30005"
+              ENABLE_MLAT: "true"
+              LAT:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: FEEDER_LAT
+              LONG:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: FEEDER_LONG
+              ALT:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: FEEDER_ALT_M
+              OPENSKY_USERNAME:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: OPENSKY_USERNAME
+              OPENSKY_SERIAL:
+                valueFrom:
+                  secretKeyRef:
+                    name: flight-tracking-secrets
+                    key: OPENSKY_SERIAL
