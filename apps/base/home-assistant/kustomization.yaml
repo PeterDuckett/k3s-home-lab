@@ -3,5 +3,4 @@ kind: Kustomization
 namespace: home-assistant
 resources:
   - namespace.yaml
-  - external-service.yaml
-  - ingress.yaml
+  - service.yaml
