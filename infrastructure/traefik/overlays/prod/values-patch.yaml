@@ -15,6 +15,29 @@ spec:
         # This tells Cilium LB IPAM to assign this specific IP from your pool
         lbipam.cilium.io/ips: "10.14.100.100"
 
+    # ---- Ingress hardening ------------------------------------------------
+    ports:
+      web:
+        # Permanently redirect all plain HTTP to HTTPS.
+        http:
+          redirections:
+            entryPoint:
+              to: websecure
+              scheme: https
+              permanent: true
+      websecure:
+        # Apply the security-headers Middleware to every HTTPS router by default.
+        http:
+          middlewares:
+            - kube-system-security-headers@kubernetescrd
+
+    # Global TLS policy: TLS 1.2 floor, and reject handshakes whose SNI does
+    # not match a configured host (bare-IP / scanner probes get no response).
+    tlsOptions:
+      default:
+        minVersion: VersionTLS12
+        sniStrict: true
+
     # Layout rules for your RK1 and RPi mixed cluster
     deployment:
       replicas: 3
