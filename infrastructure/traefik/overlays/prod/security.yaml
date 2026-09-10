@@ -1,0 +1,19 @@
+# Response-header hardening applied to every websecure (HTTPS) router via the
+# ports.websecure.http.middlewares entrypoint default in values-patch.yaml.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: security-headers
+  namespace: kube-system
+spec:
+  headers:
+    # HSTS: 2 years. Only set stsPreload=true (and submit to hstspreload.org)
+    # once every peterduckett.me host is permanently HTTPS-only.
+    stsSeconds: 63072000
+    stsIncludeSubdomains: true
+    stsPreload: false
+    forceSTSHeader: true
+    contentTypeNosniff: true
+    referrerPolicy: strict-origin-when-cross-origin
+    customFrameOptionsValue: SAMEORIGIN
+    permissionsPolicy: "camera=(), microphone=(), geolocation=(), browsing-topics=()"
