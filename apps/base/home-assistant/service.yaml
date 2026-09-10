@@ -1,0 +1,15 @@
+# Home Assistant runs outside the cluster. This selectorless Service is the
+# stable in-cluster handle; each environment overlay supplies a matching
+# EndpointSlice with the actual host address
+# (see apps/overlays/prod/home-assistant/endpointslice.yaml).
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-assistant
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8123
+      targetPort: 8123
+      protocol: TCP
