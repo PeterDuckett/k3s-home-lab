@@ -23,9 +23,18 @@ spec:
     remediation:
       retries: 3
   values:
-    # Single node is enough for a home MQTT broker; the chart's k8s
-    # cluster-discovery config is only needed when replicaCount > 1.
-    replicaCount: 1
+    # 3 nodes for real HA -- odd number so the cluster can heal from a
+    # net-split. Needs k8s-based node discovery so each pod can find its
+    # peers via the emqx-headless Service the chart creates.
+    replicaCount: 3
+    config:
+      cluster:
+        discovery_strategy: k8s
+        k8s:
+          apiserver: "https://kubernetes.default.svc:443"
+          service_name: emqx-headless
+          address_type: hostname
+          namespace: messaging
     resources:
       requests:
         cpu: "200m"
