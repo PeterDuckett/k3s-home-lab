@@ -17,8 +17,15 @@ spec:
   timeout: 15m  # <--- ADD OR UPDATE THIS LINE
   chart:
     spec:
+      # Pinned exact (not a floating "1.19.x" range) -- 1.19.8 carries
+      # a backport (cilium/cilium#48778, PR #48376, merged 2026-09-01)
+      # that makes socket-LB cgroup programs require kernel BTF
+      # unconditionally, breaking all new pod networking on the Pi
+      # worker nodes (node-2-x, node-sdr), which have no BTF at all.
+      # 1.19.7 predates that backport. Revisit once upstream fixes
+      # #48778 in a later release.
       chart: cilium
-      version: "1.19.x"
+      version: "1.19.7"
       sourceRef:
         kind: HelmRepository
         name: cilium
