@@ -7,8 +7,12 @@ metadata:
     io.cilium.bgp/pool: homelab-pool
 spec:
   blocks:
-    - cidr: 10.14.100.128/25
-    - cidr: 10.14.100.100/30
+    # Full DHCP-pool range (10.14.100.100-254 is also the Lab VLAN's DHCP
+    # range in UniFi) reserved for LoadBalancer IPs. Was previously split
+    # into .100/30 (.100-.103) and .128/25 (.128-.255), leaving .104-.127
+    # unusable -- widened to one contiguous range covering the whole thing.
+    - start: 10.14.100.100
+      stop: 10.14.100.255
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPAdvertisement
