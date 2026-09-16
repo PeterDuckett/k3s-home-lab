@@ -42,6 +42,11 @@ spec:
               BEASTHOST: "ultrafeeder"
               BEASTPORT: "30005"
               ENABLE_MLAT: "true"
+              # Push OpenSky's own MLAT results into ultrafeeder's mlathub so
+              # they show on the local tar1090 map too (read-only from
+              # mlathub's side; nothing is sent back to OpenSky).
+              MLAT_RESULTS_BEASTHOST: "ultrafeeder"
+              MLAT_RESULTS_BEASTPORT: "31004"
               LAT:
                 valueFrom:
                   secretKeyRef:
