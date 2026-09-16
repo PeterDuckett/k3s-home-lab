@@ -9,7 +9,6 @@ resources:
   - lidarr
   - prowlarr
   - radarr
-  - readarr
   - wizarr
   - sonarr
   - overseerr
@@ -18,10 +17,13 @@ resources:
   - doplarr
   - mylar
   - tdarr
-  - plaxt
   - maintainerr
   # postarr intentionally left out -- no official/trustworthy image
   # source found, needs clarification before deploying.
+  #
+  # readarr and plaxt removed -- no arm64 image available for either
+  # (readarr:develop has no arm64 manifest, plaxt image is amd64-only),
+  # permanently broken on this cluster's arm64 nodes.
   #
   # The remaining app dirs in this folder (homarr, jackett, organizrr)
   # still contain the placeholder kustomization.yaml copied from the
