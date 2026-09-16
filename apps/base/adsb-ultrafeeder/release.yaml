@@ -110,11 +110,20 @@ spec:
               #     already expose on port 30105 in Beast format for exactly
               #     this purpose. One-directional -- mlathub only reads these,
               #     nothing is sent back.
+              #   - OpenSky pushes its own results into mlathub's input port
+              #     (31004, exposed on this Service below) instead -- see
+              #     apps/base/opensky-network for the matching env vars.
               #   - 127.0.0.1,30104,beast_in: push the merged result (5
-              #     aggregators + piaware + airnavradar) into readsb itself.
+              #     aggregators + piaware + airnavradar + opensky) into
+              #     readsb itself.
               # Without that last line, MLAT still uploads fine to every
               # aggregator but nothing comes back to the local map --
               # confirmed missing 2026-09-16.
+              #
+              # FlightRadar24 was checked too (fr24feed.ini, mlat=yes) but its
+              # closed-source feeder exposes no local results output or
+              # results-forwarding option -- FR24's MLAT is server-side only,
+              # no local feedback loop available.
               ULTRAFEEDER_CONFIG: |-
                 adsb,in.adsb.lol,30004,beast_reduce_plus_out;
                 adsb,feed.adsb.fi,30004,beast_reduce_plus_out;
@@ -141,8 +150,14 @@ spec:
             port: 30003
           beast-reduce:
             port: 30006
+          # mlathub's actual output port (its merged Beast stream), in case
+          # anything external wants to consume it directly.
           mlat-hub:
-            port: 30105
+            port: 31005
+          # mlathub's input port -- OpenSky's mlat-client connects here to
+          # push its own MLAT results in (see apps/base/opensky-network).
+          mlathub-in:
+            port: 31004
     ingress:
       main:
         className: traefik
