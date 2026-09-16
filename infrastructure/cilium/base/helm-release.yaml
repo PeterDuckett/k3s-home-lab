@@ -41,11 +41,3 @@ spec:
       enabled: false
     bgpControlPlane:
       enabled: true
-    # socketLB's cgroup hooks (cil_sock4/6_connect, sendmsg, post_bind)
-    # need CO-RE/BTF, which the Pi worker kernels (node-2-x, node-sdr)
-    # don't ship. With it enabled, new pod endpoint creation on those
-    # nodes hangs forever ("no BTF found ... not supported"). Service
-    # routing still works fine via the packet-level (tc-attached) BPF
-    # NAT path, which doesn't need CO-RE.
-    socketLB:
-      enabled: false
