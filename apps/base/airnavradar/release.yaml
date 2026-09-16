@@ -62,3 +62,12 @@ spec:
                   secretKeyRef:
                     name: airnavradar-secret
                     key: ALTITUDE_M
+    service:
+      main:
+        controller: main
+        ports:
+          # AirNavRadar/RadarBox's own MLAT results, Beast format. Pulled by
+          # ultrafeeder's mlathub (see apps/base/adsb-ultrafeeder) to merge
+          # into the local tar1090 map. Read-only from mlathub's side.
+          mlat-results:
+            port: 30105
