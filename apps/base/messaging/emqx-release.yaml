@@ -53,3 +53,14 @@ spec:
       dashboard:
         enabled: true
         port: 18083
+    # UNVERIFIED against the actual 5.8.3 chart source (couldn't pull it to
+    # check) -- extraEnvFrom is a common convention for injecting a Secret's
+    # keys as container env vars, which is how EMQX_DASHBOARD__DEFAULT_USERNAME
+    # / EMQX_DASHBOARD__DEFAULT_PASSWORD (from emqx-secret, synced from
+    # Infisical at Messaging/EMQX) would override the default admin/public
+    # dashboard login. Check `flux get helmrelease -n messaging emqx` after
+    # first reconcile -- if this key is wrong the release will fail cleanly
+    # and we adjust it against the real values schema.
+    extraEnvFrom:
+      - secretRef:
+          name: emqx-secret
