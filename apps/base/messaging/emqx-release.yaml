@@ -22,6 +22,29 @@ spec:
   upgrade:
     remediation:
       retries: 3
+  # The chart's values.yaml has no hook for mounting an extra Secret as a
+  # volume, so the emqx-mqtt-tls cert (from mqtt-certificate.yaml) is
+  # mounted by patching the rendered StatefulSet directly -- Flux's
+  # documented escape hatch for exactly this situation.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: StatefulSet
+              name: emqx
+            patch: |
+              - op: add
+                path: /spec/template/spec/volumes
+                value:
+                  - name: mqtt-tls
+                    secret:
+                      secretName: emqx-mqtt-tls
+              - op: add
+                path: /spec/template/spec/containers/0/volumeMounts/-
+                value:
+                  name: mqtt-tls
+                  mountPath: /tls
+                  readOnly: true
   values:
     # 3 nodes for real HA -- odd number so the cluster can heal from a
     # net-split. Needs k8s-based node discovery so each pod can find its
@@ -38,6 +61,11 @@ spec:
       EMQX_CLUSTER__K8S__ADDRESS_TYPE: "hostname"
       EMQX_CLUSTER__K8S__NAMESPACE: "messaging"
       EMQX_CLUSTER__K8S__SUFFIX: "svc.cluster.local"
+      # mqtt-tls Secret (tls.crt/tls.key) mounted at /tls by the
+      # postRenderers patch above. HOCON path is
+      # listeners.ssl.default.ssl_options.{certfile,keyfile}.
+      EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__CERTFILE: "/tls/tls.crt"
+      EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__KEYFILE: "/tls/tls.key"
     resources:
       requests:
         cpu: "200m"
@@ -68,16 +96,9 @@ spec:
       # this chart, not {enabled, port} objects.
       mqtt: 1883
       dashboard: 18083
-    # UNVERIFIED against the actual 5.8.3 chart templates (couldn't pull
-    # them to check) -- extraEnvFrom is a common convention for injecting
-    # a Secret's keys as container env vars, which is how
-    # EMQX_DASHBOARD__DEFAULT_USERNAME / EMQX_DASHBOARD__DEFAULT_PASSWORD
-    # (from emqx-secret, synced from Infisical at Messaging/EMQX) would
-    # override the default admin/public dashboard login. Since Helm
-    # silently ignores unrecognised values keys instead of erroring, a
-    # wrong guess here won't fail the release -- verify by checking the
-    # actual pod env once it's running (kubectl get pod -n messaging
-    # <pod> -o yaml) rather than trusting this blindly.
+    # Confirmed working: envFrom-injected keys from emqx-secret (synced
+    # from Infisical at Messaging/EMQX) do reach the container and are
+    # read by EMQX -- verified via kubectl exec env after deploy.
     extraEnvFrom:
       - secretRef:
           name: emqx-secret
