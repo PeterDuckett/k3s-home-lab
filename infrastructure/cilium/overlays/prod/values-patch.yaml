@@ -1,1 +1,15 @@
-YXBpVmVyc2lvbjogaGVsbS50b29sa2l0LmZsdXhjZC5pby92MgpraW5kOiBIZWxtUmVsZWFzZQptZXRhZGF0YToKICBuYW1lOiBjaWxpdW0KICBuYW1lc3BhY2U6IGt1YmUtc3lzdGVtCnNwZWM6CiAgdmFsdWVzOgogICMgSW5jcmVhc2UgdGltZW91dHMgZm9yIEJQRiBjb21waWxhdGlvbiBhbmQgcHJveHkgaW50ZXJhY3Rpb25zCiAgICBicGY6CiAgICAgIGNvbXBpbGVUaW1lb3V0OiAiMTVtIgogICAgIyBOT1RFOiBpcHY2IGludGVudGlvbmFsbHkgTk9UIGVuYWJsZWQgaGVyZSAtLSB0aGUgd29ya2VyIG5vZGVzJwogICAgIyBSYXNwYmVycnkgUGkga2VybmVscyBsYWNrIEJURiAoL3N5cy9rZXJuZWwvYnRmL3ZtbGludXgpLCB3aGljaAogICAgIyBicmVha3MgQ2lsaXVtJ3MgZUJQRiBDTy1SRSBjb21waWxhdGlvbiBmb3IgSVB2NiAoU05BVCB2ZXJpZmllcgogICAgIyBmYWlsdXJlLCBjaWxpdW0tZW52b3kgYWJvcnQvY29yZS1kdW1wKS4gSVB2NC1vbmx5IHVudGlsIHRoZQogICAgIyBrZXJuZWxzIHNoaXAgcHJvcGVyIEJURiBzdXBwb3J0Lgo=
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cilium
+  namespace: kube-system
+spec:
+  values:
+  # Increase timeouts for BPF compilation and proxy interactions
+    bpf:
+      compileTimeout: "15m"
+    # NOTE: ipv6 intentionally NOT enabled here -- the worker nodes'
+    # Raspberry Pi kernels lack BTF (/sys/kernel/btf/vmlinux), which
+    # breaks Cilium's eBPF CO-RE compilation for IPv6 (SNAT verifier
+    # failure, cilium-envoy abort/core-dump). IPv4-only until the
+    # kernels ship proper BTF support.
