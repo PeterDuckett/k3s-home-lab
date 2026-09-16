@@ -100,6 +100,13 @@ spec:
               # dedicated feeder containers (FR24 / PlaneFinder / PiAware /
               # ADSBHub / OpenSky / AirNav) are separate HelmReleases that pull
               # Beast/SBS from this pod's Service. Tune the list here.
+              #
+              # The mlathub line wires mlathub's merged MLAT results (from all
+              # the mlat, feeds below) back into readsb's dedicated MLAT input
+              # port (--net-bi-port=30004,30104) so multilateration-derived
+              # aircraft actually show up on the local tar1090 map. Without
+              # it, MLAT still uploads fine to every aggregator but nothing
+              # comes back to the local map -- confirmed missing 2026-09-16.
               ULTRAFEEDER_CONFIG: |-
                 adsb,in.adsb.lol,30004,beast_reduce_plus_out;
                 adsb,feed.adsb.fi,30004,beast_reduce_plus_out;
@@ -110,7 +117,8 @@ spec:
                 mlat,feed.adsb.fi,31090;
                 mlat,feed.adsbexchange.com,31090,39008;
                 mlat,mlat.planespotters.net,31090;
-                mlat,feed.theairtraffic.com,31090
+                mlat,feed.theairtraffic.com,31090;
+                mlathub,127.0.0.1,30104,beast_in
     service:
       main:
         controller: main
