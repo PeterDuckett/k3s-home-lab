@@ -27,14 +27,17 @@ spec:
     # net-split. Needs k8s-based node discovery so each pod can find its
     # peers via the emqx-headless Service the chart creates.
     replicaCount: 3
-    config:
-      cluster:
-        discovery_strategy: k8s
-        k8s:
-          apiserver: "https://kubernetes.default.svc:443"
-          service_name: emqx-headless
-          address_type: hostname
-          namespace: messaging
+    # This chart uses the classic emqxConfig env-var style (EMQX_<PATH>
+    # mapped straight to container env), not a nested config.cluster.*
+    # values block -- confirmed against the real chart after the first
+    # deploy attempt failed with the nested form silently ignored.
+    emqxConfig:
+      EMQX_CLUSTER__DISCOVERY: "k8s"
+      EMQX_CLUSTER__K8S__APISERVER: "https://kubernetes.default.svc:443"
+      EMQX_CLUSTER__K8S__SERVICE_NAME: "emqx-headless"
+      EMQX_CLUSTER__K8S__ADDRESS_TYPE: "hostname"
+      EMQX_CLUSTER__K8S__NAMESPACE: "messaging"
+      EMQX_CLUSTER__K8S__SUFFIX: "svc.cluster.local"
     resources:
       requests:
         cpu: "200m"
@@ -56,20 +59,20 @@ spec:
       externalTrafficPolicy: Cluster
       annotations:
         io.cilium/lb-ipam-ips: "10.14.100.110"
-      mqtt:
-        enabled: true
-        port: 1883
-      dashboard:
-        enabled: true
-        port: 18083
-    # UNVERIFIED against the actual 5.8.3 chart source (couldn't pull it to
-    # check) -- extraEnvFrom is a common convention for injecting a Secret's
-    # keys as container env vars, which is how EMQX_DASHBOARD__DEFAULT_USERNAME
-    # / EMQX_DASHBOARD__DEFAULT_PASSWORD (from emqx-secret, synced from
-    # Infisical at Messaging/EMQX) would override the default admin/public
-    # dashboard login. Check `flux get helmrelease -n messaging emqx` after
-    # first reconcile -- if this key is wrong the release will fail cleanly
-    # and we adjust it against the real values schema.
+      # Confirmed via a failed deploy attempt: these are plain ints in
+      # this chart, not {enabled, port} objects.
+      mqtt: 1883
+      dashboard: 18083
+    # UNVERIFIED against the actual 5.8.3 chart templates (couldn't pull
+    # them to check) -- extraEnvFrom is a common convention for injecting
+    # a Secret's keys as container env vars, which is how
+    # EMQX_DASHBOARD__DEFAULT_USERNAME / EMQX_DASHBOARD__DEFAULT_PASSWORD
+    # (from emqx-secret, synced from Infisical at Messaging/EMQX) would
+    # override the default admin/public dashboard login. Since Helm
+    # silently ignores unrecognised values keys instead of erroring, a
+    # wrong guess here won't fail the release -- verify by checking the
+    # actual pod env once it's running (kubectl get pod -n messaging
+    # <pod> -o yaml) rather than trusting this blindly.
     extraEnvFrom:
       - secretRef:
           name: emqx-secret
