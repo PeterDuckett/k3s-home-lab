@@ -1,0 +1,75 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: emqx
+  namespace: messaging
+spec:
+  releaseName: emqx
+  chart:
+    spec:
+      chart: emqx
+      version: "5.8.3"
+      sourceRef:
+        kind: HelmRepository
+        name: emqx
+        namespace: flux-system
+  interval: 15m
+  timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # 3 nodes for real HA -- odd number so the cluster can heal from a
+    # net-split. Needs k8s-based node discovery so each pod can find its
+    # peers via the emqx-headless Service the chart creates.
+    replicaCount: 3
+    config:
+      cluster:
+        discovery_strategy: k8s
+        k8s:
+          apiserver: "https://kubernetes.default.svc:443"
+          service_name: emqx-headless
+          address_type: hostname
+          namespace: messaging
+    resources:
+      requests:
+        cpu: "200m"
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1024Mi
+    persistence:
+      enabled: true
+      storageClassName: longhorn
+      resources:
+        requests:
+          storage: 4Gi
+    service:
+      type: LoadBalancer
+      # Cilium native LB-IPAM (no MetalLB in this cluster) -- pins the
+      # broker to a stable IP for MQTT clients, same pattern as Traefik
+      # (.100), Infisical ingress (.128) and Postgres (.200).
+      externalTrafficPolicy: Cluster
+      annotations:
+        io.cilium/lb-ipam-ips: "10.14.100.110"
+      mqtt:
+        enabled: true
+        port: 1883
+      dashboard:
+        enabled: true
+        port: 18083
+    # UNVERIFIED against the actual 5.8.3 chart source (couldn't pull it to
+    # check) -- extraEnvFrom is a common convention for injecting a Secret's
+    # keys as container env vars, which is how EMQX_DASHBOARD__DEFAULT_USERNAME
+    # / EMQX_DASHBOARD__DEFAULT_PASSWORD (from emqx-secret, synced from
+    # Infisical at Messaging/EMQX) would override the default admin/public
+    # dashboard login. Check `flux get helmrelease -n messaging emqx` after
+    # first reconcile -- if this key is wrong the release will fail cleanly
+    # and we adjust it against the real values schema.
+    extraEnvFrom:
+      - secretRef:
+          name: emqx-secret

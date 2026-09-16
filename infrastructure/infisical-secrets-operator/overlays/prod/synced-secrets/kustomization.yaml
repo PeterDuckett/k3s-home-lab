@@ -6,3 +6,4 @@ resources:
   - notifiarr-secret.yaml
   - cloudflare-api-token.yaml
   - flight-tracking-secret.yaml
+  - emqx-secret.yaml
