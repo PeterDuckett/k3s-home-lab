@@ -53,12 +53,17 @@ spec:
           storage: 4Gi
     service:
       type: LoadBalancer
-      # Cilium native LB-IPAM (no MetalLB in this cluster) -- pins the
-      # broker to a stable IP for MQTT clients, same pattern as Traefik
-      # (.100), Infisical ingress (.128) and Postgres (.200).
+      # Cilium native LB-IPAM (no MetalLB in this cluster). The pool
+      # (homelab-lb-pool) only covers 10.14.100.100/30 and .128/25, so
+      # .110 was never actually assignable -- confirmed by checking the
+      # CiliumLoadBalancerIPPool directly. .130 is free within .128/25
+      # (.128 is Infisical ingress, .200 is Postgres). The annotation key
+      # is lbipam.cilium.io/ips, confirmed against Traefik's working
+      # Service -- io.cilium/lb-ipam-ips (my first guess) doesn't exist
+      # and was silently ignored.
       externalTrafficPolicy: Cluster
       annotations:
-        io.cilium/lb-ipam-ips: "10.14.100.110"
+        lbipam.cilium.io/ips: "10.14.100.130"
       # Confirmed via a failed deploy attempt: these are plain ints in
       # this chart, not {enabled, port} objects.
       mqtt: 1883
