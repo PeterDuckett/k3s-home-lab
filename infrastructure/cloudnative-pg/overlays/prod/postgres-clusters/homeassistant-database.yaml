@@ -1,0 +1,40 @@
+# Database + role for Home Assistant's recorder, on the shared HA Postgres
+# cluster (see postgres-cluster.yaml's comment -- "other apps can get their
+# own database added to this same cluster later"). Home Assistant itself
+# runs outside the cluster (HAOS), reachable at postgres-external
+# (10.14.100.200:5432, see postgres-cluster.yaml's managed.services).
+#
+# Credentials come from Infisical (see
+# infrastructure/infisical-secrets-operator/overlays/prod/synced-secrets/homeassistant-secret.yaml)
+# -- not a plaintext Secret manifest here.
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: homeassistant
+  namespace: database
+spec:
+  cluster:
+    name: postgres
+  name: homeassistant
+  login: true
+  passwordSecret:
+    name: homeassistant-postgres-credentials
+  comment: "Home Assistant recorder"
+  # Not the cluster's own lifecycle -- don't drop this role (and orphan the
+  # database it owns) if this object is ever removed from the repo.
+  databaseRoleReclaimPolicy: retain
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: homeassistant
+  namespace: database
+spec:
+  cluster:
+    name: postgres
+  name: homeassistant
+  owner: homeassistant
+  encoding: UTF8
+  # Not the cluster's own lifecycle -- don't drop real HA history if this
+  # object is ever removed from the repo.
+  databaseReclaimPolicy: retain

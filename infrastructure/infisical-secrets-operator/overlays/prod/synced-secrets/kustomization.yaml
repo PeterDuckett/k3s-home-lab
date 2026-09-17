@@ -7,3 +7,4 @@ resources:
   - cloudflare-api-token.yaml
   - flight-tracking-secret.yaml
   - emqx-secret.yaml
+  - homeassistant-secret.yaml
