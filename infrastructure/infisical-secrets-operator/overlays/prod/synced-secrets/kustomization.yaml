@@ -8,3 +8,4 @@ resources:
   - flight-tracking-secret.yaml
   - emqx-secret.yaml
   - homeassistant-secret.yaml
+  - tdarr-secret.yaml

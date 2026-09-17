@@ -56,6 +56,22 @@ spec:
               # transcode jobs. First visit to the UI after this prompts to
               # create the admin login.
               auth: "true"
+              # With auth on, the internal Tdarr Node (internalNode: "true",
+              # runs in this same container) needs an API key to keep talking
+              # to the server -- apiKey is the node's own credential,
+              # seededApiKey tells the server to accept it non-interactively.
+              # Same value, both required. Confirmed 2026-09-17: without this,
+              # the node gets 401s and transcoding silently stops working.
+              apiKey:
+                valueFrom:
+                  secretKeyRef:
+                    name: tdarr-secret
+                    key: API_KEY
+              seededApiKey:
+                valueFrom:
+                  secretKeyRef:
+                    name: tdarr-secret
+                    key: API_KEY
             resources:
               requests:
                 cpu: 100m
