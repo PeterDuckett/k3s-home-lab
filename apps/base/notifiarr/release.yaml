@@ -56,6 +56,23 @@ spec:
         ports:
           http:
             port: 5454
+    ingress:
+      main:
+        className: traefik
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        hosts:
+          - host: &host notifiarr.peterduckett.me
+            paths:
+              - path: /
+                pathType: Prefix
+                service:
+                  identifier: main
+                  port: http
+        tls:
+          - secretName: notifiarr-tls
+            hosts:
+              - *host
     persistence:
       config:
         existingClaim: notifiarr-config

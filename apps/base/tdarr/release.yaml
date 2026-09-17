@@ -66,6 +66,23 @@ spec:
             port: 8265
           server:
             port: 8266
+    ingress:
+      main:
+        className: traefik
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        hosts:
+          - host: &host tdarr.peterduckett.me
+            paths:
+              - path: /
+                pathType: Prefix
+                service:
+                  identifier: main
+                  port: webui
+        tls:
+          - secretName: tdarr-tls
+            hosts:
+              - *host
     persistence:
       server:
         existingClaim: tdarr-server-config

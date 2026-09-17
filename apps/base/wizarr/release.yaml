@@ -49,6 +49,23 @@ spec:
         ports:
           http:
             port: 5690
+    ingress:
+      main:
+        className: traefik
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        hosts:
+          - host: &host wizarr.peterduckett.me
+            paths:
+              - path: /
+                pathType: Prefix
+                service:
+                  identifier: main
+                  port: http
+        tls:
+          - secretName: wizarr-tls
+            hosts:
+              - *host
     persistence:
       data:
         existingClaim: wizarr-data
