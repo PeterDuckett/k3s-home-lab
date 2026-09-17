@@ -21,10 +21,23 @@ spec:
     hostname: rancher.peterduckett.me # Update to match your local network's DNS/UDM Pro setup
     replicas: 3
     bootstrapPassword: "BullFrog"
-    
+
     # Optional: If you are managing your certificates outside of cert-manager (e.g. at the Unifi proxy level)
     # tls: external
-    
+
     # If your Cilium ingress setup requires a specific ingress class, uncomment below:
     # ingress:
     #   ingressClassName: cilium
+
+    # Default (source: rancher) generates Rancher's own self-signed CA cert.
+    # That's not publicly trusted, so once this went behind Cloudflare
+    # (proxied, "Full (strict)" mode) it started returning HTTP 526 (Invalid
+    # SSL Certificate) -- confirmed 2026-09-17. Switching to the same
+    # cert-manager + letsencrypt-prod DNS-01 pattern everything else here
+    # uses, instead of touching Cloudflare's zone-wide SSL mode for just
+    # this one app.
+    ingress:
+      tls:
+        source: secret
+      extraAnnotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
