@@ -5,3 +5,4 @@ resources:
   - longhorn-cnpg-storageclass.yaml
   - postgres-migration-secret.yaml
   - postgres-cluster.yaml
+  - homeassistant-database.yaml
