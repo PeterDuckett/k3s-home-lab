@@ -1,0 +1,12 @@
+# Maintainerr has no built-in login (by design, per its own docs) but it
+# has full API access to Plex/Sonarr/Radarr credentials and can modify
+# library collections -- since it's public at maintainerr.peterduckett.me,
+# enforce auth at the Traefik layer instead.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: maintainerr-auth
+  namespace: downloads
+spec:
+  basicAuth:
+    secret: maintainerr-basicauth

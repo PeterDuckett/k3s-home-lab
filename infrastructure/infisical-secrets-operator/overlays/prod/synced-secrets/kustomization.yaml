@@ -9,3 +9,4 @@ resources:
   - emqx-secret.yaml
   - homeassistant-secret.yaml
   - tdarr-secret.yaml
+  - maintainerr-basicauth-secret.yaml

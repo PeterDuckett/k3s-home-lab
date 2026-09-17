@@ -62,6 +62,8 @@ spec:
         className: traefik
         annotations:
           cert-manager.io/cluster-issuer: letsencrypt-prod
+          # Maintainerr has no login of its own -- see basicauth-middleware.yaml.
+          traefik.ingress.kubernetes.io/router.middlewares: downloads-maintainerr-auth@kubernetescrd
         hosts:
           - host: &host maintainerr.peterduckett.me
             paths:
