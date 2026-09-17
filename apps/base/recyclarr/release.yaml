@@ -43,6 +43,13 @@ spec:
             env:
               TZ: "Etc/UTC"
               CRON_SCHEDULE: "0 */6 * * *"
+            resources:
+              requests:
+                cpu: 15m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
     persistence:
       config:
         existingClaim: recyclarr-config

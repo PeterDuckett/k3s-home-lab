@@ -43,6 +43,13 @@ spec:
                   secretKeyRef:
                     name: notifiarr-secret
                     key: DN_API_KEY
+            resources:
+              requests:
+                cpu: 15m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
     service:
       main:
         controller: main
