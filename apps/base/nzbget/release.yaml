@@ -50,6 +50,23 @@ spec:
         ports:
           http:
             port: 6789
+    ingress:
+      main:
+        className: traefik
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        hosts:
+          - host: &host nzbget.peterduckett.me
+            paths:
+              - path: /
+                pathType: Prefix
+                service:
+                  identifier: main
+                  port: http
+        tls:
+          - secretName: nzbget-tls
+            hosts:
+              - *host
     persistence:
       config:
         existingClaim: nzbget-config
