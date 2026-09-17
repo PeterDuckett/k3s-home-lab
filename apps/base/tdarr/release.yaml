@@ -51,6 +51,11 @@ spec:
               serverPort: "8266"
               webUIPort: "8265"
               internalNode: "true"
+              # Off by default -- now that this is public (tdarr.peterduckett.me),
+              # leaving it open means anyone who finds the URL can control
+              # transcode jobs. First visit to the UI after this prompts to
+              # create the admin login.
+              auth: "true"
             resources:
               requests:
                 cpu: 100m
