@@ -50,6 +50,13 @@ spec:
                   secretKeyRef:
                     name: piaware-secret
                     key: FEEDER_ID
+            resources:
+              requests:
+                cpu: 80m
+                memory: 64Mi
+              limits:
+                cpu: 300m
+                memory: 256Mi
     service:
       main:
         controller: main

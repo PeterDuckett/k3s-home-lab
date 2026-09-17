@@ -38,6 +38,13 @@ spec:
               PGID: "1000"
               TZ: "Etc/UTC"
               WEBUI_PORT: "8080"
+            resources:
+              requests:
+                cpu: 15m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 768Mi
     service:
       main:
         controller: main

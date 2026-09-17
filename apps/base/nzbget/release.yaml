@@ -37,6 +37,13 @@ spec:
               PUID: "1000"
               PGID: "1000"
               TZ: "Etc/UTC"
+            resources:
+              requests:
+                cpu: 15m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
     service:
       main:
         controller: main
