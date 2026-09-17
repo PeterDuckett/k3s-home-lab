@@ -1,17 +1,62 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: adguard-home
-  namespace: system
+  name: apt-cacher-ng
+  namespace: infrastructure
 spec:
-  releaseName: adguard-home
+  releaseName: apt-cacher-ng
   chart:
     spec:
-      chart: adguard-home
+      chart: app-template
+      version: "3.x"
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home-charts
+        name: bjw-s
         namespace: flux-system
   interval: 15m
   timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      main:
+        type: deployment
+        replicas: 1
+        containers:
+          main:
+            image:
+              repository: mbentley/apt-cacher-ng
+              tag: latest
+              pullPolicy: Always
+            env:
+              TZ: "Europe/London"
+    service:
+      main:
+        controller: main
+        # LoadBalancer (Cilium LB IPAM, see infrastructure/cilium/overlays/prod/bgp-config)
+        # so DietPi and Ubuntu nodes can point their host-level apt proxy config
+        # directly at a stable LAN IP -- ClusterIP wouldn't be reachable from the
+        # nodes' own OS apt, only from inside the pod network.
+        # Pinned (not auto-assigned) since this IP gets hardcoded into every
+        # node's /etc/apt/apt.conf.d proxy config -- same mechanism Traefik uses
+        # for its own fixed 10.14.100.100.
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: "10.14.100.101"
+        ports:
+          http:
+            port: 3142
+    persistence:
+      # Package cache -- Longhorn-backed so it survives pod reschedule; no
+      # unique hardware dependency here (unlike ultrafeeder's USB dongle), so
+      # unlike node-sdr there's no need to pin this to a specific node.
+      cache:
+        existingClaim: apt-cacher-ng-cache
+        globalMounts:
+          - path: /var/cache/apt-cacher-ng
