@@ -20,7 +20,17 @@ spec:
   values:
     hostname: rancher.peterduckett.me # Update to match your local network's DNS/UDM Pro setup
     replicas: 3
-    bootstrapPassword: "BullFrog"
+
+    # bootstrapPassword was removed 2026-09-18: Rancher was already
+    # bootstrapped (first-login=false) and leaving this set caused every
+    # non-leader replica to crash-loop trying to re-reconcile the bootstrap
+    # password against a setting the webhook now treats as read-only
+    # (admission webhook "rancher.cattle.io.settings.management.cattle.io"
+    # denied the request: setting is read only). Only needed for a
+    # from-scratch install -- set it back to a real value temporarily if
+    # this cluster is ever rebuilt from zero, then remove again once
+    # first-login flips to false.
+    # bootstrapPassword: "BullFrog"
 
     # Optional: If you are managing your certificates outside of cert-manager (e.g. at the Unifi proxy level)
     # tls: external
