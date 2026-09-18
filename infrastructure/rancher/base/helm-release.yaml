@@ -17,19 +17,55 @@ spec:
   targetNamespace: cattle-system
   install:
     createNamespace: true
+  # postRenderers patches the rendered Ingress's cert-manager annotations
+  # AFTER Helm templating, instead of setting values.ingress.tls.source.
+  #
+  # Why: the rancher chart only skips adding "--no-cacerts" to the
+  # container's args when ingress.tls.source stays at its default
+  # ("rancher") or privateCA=true (chart/templates/deployment.yaml). Any
+  # other tls.source value -- including "secret", which this app used
+  # 2026-09-17 to 2026-09-18 -- adds --no-cacerts, which makes Rancher try
+  # to clear the already-populated "cacerts"/"internal-cacerts" Settings on
+  # every boot (pkg/tls/tls.go). Those Settings were locked in at original
+  # bootstrap (2026-06-03), so the rancher.cattle.io admission webhook
+  # permanently rejects the write with "setting is read only",
+  # crash-looping any pod whose args include that flag. Confirmed against
+  # rancher/rancher source 2026-09-18; the bootstrapPassword removal tried
+  # first was a dead end -- ruled out once pods kept crash-looping with it
+  # already gone.
+  #
+  # Patching the Ingress post-render instead avoids the flag entirely,
+  # while still getting a real cert-manager + letsencrypt-prod cert (same
+  # pattern used elsewhere in this repo) in place of the chart's default
+  # self-signed Issuer -- which is what caused the original HTTP 526
+  # (Invalid SSL Certificate) behind Cloudflare's proxy, confirmed
+  # 2026-09-17. Uses the chart's default secretName (tls-rancher-ingress)
+  # so the Ingress's own tls.secretName reference needs no change.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Ingress
+              name: cattle-system-rancher
+            patch: |
+              - op: remove
+                path: /metadata/annotations/cert-manager.io~1issuer
+              - op: remove
+                path: /metadata/annotations/cert-manager.io~1issuer-kind
+              - op: add
+                path: /metadata/annotations/cert-manager.io~1cluster-issuer
+                value: letsencrypt-prod
   values:
     hostname: rancher.peterduckett.me # Update to match your local network's DNS/UDM Pro setup
     replicas: 3
 
     # bootstrapPassword was removed 2026-09-18: Rancher was already
-    # bootstrapped (first-login=false) and leaving this set caused every
-    # non-leader replica to crash-loop trying to re-reconcile the bootstrap
-    # password against a setting the webhook now treats as read-only
-    # (admission webhook "rancher.cattle.io.settings.management.cattle.io"
-    # denied the request: setting is read only). Only needed for a
-    # from-scratch install -- set it back to a real value temporarily if
-    # this cluster is ever rebuilt from zero, then remove again once
-    # first-login flips to false.
+    # bootstrapped (first-login=false), and leaving this set is only ever
+    # needed for a from-scratch install. Turned out NOT to be the cause of
+    # the crash loop (see postRenderers comment above for the real cause)
+    # but there's no reason to keep injecting it now that it's bootstrapped.
+    # Set it back to a real value temporarily only if this cluster is ever
+    # rebuilt from zero, then remove again once first-login flips to false.
     # bootstrapPassword: "BullFrog"
 
     # Optional: If you are managing your certificates outside of cert-manager (e.g. at the Unifi proxy level)
@@ -39,15 +75,7 @@ spec:
     # ingress:
     #   ingressClassName: cilium
 
-    # Default (source: rancher) generates Rancher's own self-signed CA cert.
-    # That's not publicly trusted, so once this went behind Cloudflare
-    # (proxied, "Full (strict)" mode) it started returning HTTP 526 (Invalid
-    # SSL Certificate) -- confirmed 2026-09-17. Switching to the same
-    # cert-manager + letsencrypt-prod DNS-01 pattern everything else here
-    # uses, instead of touching Cloudflare's zone-wide SSL mode for just
-    # this one app.
-    ingress:
-      tls:
-        source: secret
-      extraAnnotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
+    # ingress.tls.source is intentionally left unset (chart default:
+    # "rancher") -- see the postRenderers comment above for why. Do not set
+    # ingress.tls.source or privateCA here without re-reading that note
+    # first, or the rancher pods will crash-loop again.
