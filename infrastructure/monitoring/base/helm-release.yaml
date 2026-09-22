@@ -1,0 +1,83 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: flux-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      # Track the 91.x line. Check for newer majors periodically.
+      version: "91.x"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      interval: 1h
+  targetNamespace: monitoring
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Same reasoning as infrastructure/longhorn/base/helm-release.yaml: the
+    # control-plane nodes aren't tainted today, but tolerate the standard
+    # taints anyway so this keeps scheduling if that ever changes.
+    prometheus:
+      prometheusSpec:
+        retention: 15d
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: longhorn
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 20Gi
+        tolerations: &control-plane-tolerations
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
+          - key: "node-role.kubernetes.io/master"
+            operator: "Exists"
+            effect: "NoSchedule"
+
+    alertmanager:
+      alertmanagerSpec:
+        storage:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: longhorn
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 2Gi
+        tolerations: *control-plane-tolerations
+
+    grafana:
+      persistence:
+        enabled: true
+        type: pvc
+        storageClassName: longhorn
+        accessModes: ["ReadWriteOnce"]
+        size: 5Gi
+      tolerations: *control-plane-tolerations
+      # adminPassword intentionally left unset -- the chart generates a
+      # random one and stores it in the kube-prometheus-stack-grafana
+      # Secret (key: admin-password) rather than committing a password to
+      # git. Retrieve it with:
+      #   kubectl -n monitoring get secret kube-prometheus-stack-grafana \
+      #     -o jsonpath='{.data.admin-password}' | base64 -d
+
+    prometheusOperator:
+      tolerations: *control-plane-tolerations
+
+    prometheus-node-exporter:
+      tolerations: *control-plane-tolerations
+
+    kube-state-metrics:
+      tolerations: *control-plane-tolerations
