@@ -5,6 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
+  releaseName: kube-prometheus-stack
   chart:
     spec:
       chart: kube-prometheus-stack
