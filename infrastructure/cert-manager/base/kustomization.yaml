@@ -4,3 +4,4 @@ resources:
   - helm-repository.yaml
   - name-space.yaml
   - helm-release.yaml
+  - grafana-dashboard.yaml

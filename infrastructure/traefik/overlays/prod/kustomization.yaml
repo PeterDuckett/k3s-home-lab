@@ -3,5 +3,6 @@ kind: Kustomization
 resources:
   - '../../base'
   - security.yaml
+  - grafana-dashboard.yaml
 patches:
   - path: values-patch.yaml
