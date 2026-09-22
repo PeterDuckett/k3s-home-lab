@@ -39,7 +39,11 @@ spec:
           main:
             image:
               repository: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
-              tag: latest
+              # :latest dropped telegraf entirely on 2023-04-27 upstream --
+              # :telegraf is required for any metrics output (Prometheus or
+              # InfluxDB). Confirmed /usr/bin/telegraf is genuinely absent
+              # from :latest by execing into the running pod.
+              tag: telegraf
               pullPolicy: Always
             securityContext:
               # Required for raw RTL-SDR USB dongle access via /dev/bus/usb.
@@ -53,6 +57,12 @@ spec:
               READSB_STATS_RANGE: "true"
               # ---- Web UI ----
               UPDATE_TAR1090: "true"
+              # ---- Metrics ----
+              # Native toggle in the image's startup script
+              # (/etc/s6-overlay/startup.d/10-telegraf-conf): sets telegraf's
+              # outputs.prometheus_client plugin, listening on :9273. See
+              # servicemonitor.yaml for the scrape side of this.
+              PROMETHEUS_ENABLE: "true"
               # ---- Receiver location (from Infisical: /common) ----
               READSB_LAT:
                 valueFrom:
@@ -167,6 +177,10 @@ spec:
           # push its own MLAT results in (see apps/base/opensky-network).
           mlathub-in:
             port: 31004
+          # telegraf's outputs.prometheus_client listener (PROMETHEUS_ENABLE
+          # above). Scraped by servicemonitor.yaml.
+          metrics:
+            port: 9273
     ingress:
       main:
         className: traefik
