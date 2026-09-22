@@ -62,3 +62,16 @@ spec:
     driverDeployer:
       environment:
         KUBELET_ROOT_DIR: "/var/lib/rancher/k3s/agent/kubelet"
+
+    # 4. Native chart toggle for a ServiceMonitor against longhorn-manager's
+    # existing /metrics endpoint (port "manager", already on the
+    # longhorn-backend Service -- no separate Service needed).
+    # release: kube-prometheus-stack matches our Prometheus's
+    # serviceMonitorSelectorNilUsesHelmValues default (see
+    # infrastructure/monitoring), which only watches ServiceMonitors with
+    # that exact label regardless of namespace.
+    metrics:
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: kube-prometheus-stack

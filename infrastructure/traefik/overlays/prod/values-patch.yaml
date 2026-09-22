@@ -10,6 +10,24 @@ spec:
       dashboard:
         enabled: true
 
+    # Native chart toggle for the metrics Service + ServiceMonitor. The
+    # `metrics` entrypoint (:9100) is already running by chart default
+    # (confirmed via the pod's own args/ports) -- these two just expose it
+    # on its own dedicated Service and get Prometheus watching it. Left off
+    # the main LoadBalancer Service (service.*) on purpose, so this doesn't
+    # touch anything already wired into UniFi/DNS.
+    # release: kube-prometheus-stack matches our Prometheus's
+    # serviceMonitorSelectorNilUsesHelmValues default (see
+    # infrastructure/monitoring).
+    metrics:
+      prometheus:
+        service:
+          enabled: true
+        serviceMonitor:
+          enabled: true
+          additionalLabels:
+            release: kube-prometheus-stack
+
     service:
       annotations:
         # This tells Cilium LB IPAM to assign this specific IP from your pool
