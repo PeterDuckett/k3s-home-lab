@@ -107,8 +107,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "max(readsb_aircraft_total{job=\"ultrafeeder\"})",
+              "editorMode": "code",
+              "expr": "count(readsb_aircraft_seen{job=\"ultrafeeder\"})",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
@@ -170,8 +170,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "readsb_distance_max{job=\"ultrafeeder\"} * 0.000539957",
+              "editorMode": "code",
+              "expr": "readsb_stats_max_distance{job=\"ultrafeeder\"} * 0.000539957",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
@@ -235,9 +235,9 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "readsb_aircraft_rssi_average{job=\"ultrafeeder\"}",
-              "legendFormat": "__auto",
+              "editorMode": "code",
+              "expr": "avg(readsb_aircraft_rssi{job=\"ultrafeeder\"})",
+              "legendFormat": "Avg signal",
               "range": true,
               "refId": "A"
             },
@@ -247,9 +247,8 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "readsb_local_noise{job=\"ultrafeeder\"}",
-              "hide": false,
-              "legendFormat": "__auto",
+              "expr": "readsb_stats_local_noise{job=\"ultrafeeder\"}",
+              "legendFormat": "Noise floor",
               "range": true,
               "refId": "B"
             }
@@ -338,7 +337,7 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "readsb_aircraft_total{job=\"ultrafeeder\"}",
+              "expr": "count(readsb_aircraft_seen{job=\"ultrafeeder\"})",
               "legendFormat": "total",
               "range": true,
               "refId": "A"
@@ -348,72 +347,11 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "readsb_aircraft_adsb_icao{job=\"ultrafeeder\"}",
-              "hide": false,
-              "legendFormat": "ADS-B",
+              "editorMode": "code",
+              "expr": "count by(type) (readsb_aircraft_seen{job=\"ultrafeeder\"})",
+              "legendFormat": "{{type}}",
               "range": true,
               "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "builder",
-              "expr": "readsb_aircraft_mlat{job=\"ultrafeeder\"}",
-              "hide": false,
-              "legendFormat": "MLAT",
-              "range": true,
-              "refId": "C"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "builder",
-              "expr": "readsb_aircraft_mode_ac{job=\"ultrafeeder\"}",
-              "hide": false,
-              "legendFormat": "Mode-A/C",
-              "range": true,
-              "refId": "E"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "builder",
-              "expr": "readsb_aircraft_tisb_icao{job=\"ultrafeeder\"}",
-              "hide": false,
-              "legendFormat": "TIS-B",
-              "range": true,
-              "refId": "F"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "builder",
-              "expr": "readsb_aircraft_adsr_icao{job=\"ultrafeeder\"}",
-              "hide": false,
-              "legendFormat": "ADS-R",
-              "range": true,
-              "refId": "G"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "builder",
-              "expr": "readsb_aircraft_adsc{job=\"ultrafeeder\"}",
-              "hide": false,
-              "legendFormat": "ADS-C",
-              "range": true,
-              "refId": "H"
             }
           ],
           "title": "Aircraft Counts",
@@ -511,26 +449,14 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "readsb_distance_max{job=\"ultrafeeder\"} * 0.000539957",
+              "editorMode": "code",
+              "expr": "readsb_stats_max_distance{job=\"ultrafeeder\"} * 0.000539957",
               "legendFormat": "max range (nm)",
               "range": true,
               "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "builder",
-              "expr": "readsb_distance_min{job=\"ultrafeeder\"} * 0.000539957",
-              "hide": false,
-              "legendFormat": "min range (nm)",
-              "range": true,
-              "refId": "B"
             }
           ],
-          "title": "Max - Min Range",
+          "title": "Max Range",
           "type": "timeseries"
         },
         {
@@ -538,7 +464,7 @@ data:
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "Aircraft models with most messages received",
+          "description": "ADS-B emitter category (not full aircraft type/model -- readsb no longer exposes that via telegraf)",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -647,18 +573,14 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "topk by(t) (10, count by(t) (readsb_aircraft_seen{job=\"ultrafeeder\"}))",
-              "format": "time_series",
-              "instant": false,
-              "interval": "",
+              "editorMode": "code",
+              "expr": "topk by(category) (10, count by(category) (readsb_aircraft_seen{job=\"ultrafeeder\"}))",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "Top Aircraft Models",
+          "title": "Aircraft by Category",
           "type": "timeseries"
         },
         {
@@ -793,8 +715,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "max(readsb_messages{job=\"ultrafeeder\"})",
+              "editorMode": "code",
+              "expr": "max(readsb_stats_messages{job=\"ultrafeeder\"})",
               "legendFormat": "Messages Received",
               "range": true,
               "refId": "A"
@@ -804,9 +726,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "readsb_local_strong_signals{job=\"ultrafeeder\"}",
-              "hide": false,
+              "editorMode": "code",
+              "expr": "readsb_stats_local_strong_signals{job=\"ultrafeeder\"}",
               "legendFormat": "Messages > 3dbFS",
               "range": true,
               "refId": "B"
@@ -816,9 +737,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "max(readsb_cpr_local_ok{job=\"ultrafeeder\"}) / 60",
-              "hide": false,
+              "editorMode": "code",
+              "expr": "max(readsb_stats_cpr_local_ok{job=\"ultrafeeder\"}) / 60",
               "legendFormat": "Positions/s ",
               "range": true,
               "refId": "C"
@@ -913,8 +833,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "max(readsb_position_count_total{job=\"ultrafeeder\"})",
+              "editorMode": "code",
+              "expr": "max(readsb_stats_position_count_total{job=\"ultrafeeder\"})",
               "legendFormat": "ADS-B",
               "range": true,
               "refId": "A"
@@ -1025,8 +945,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "max(readsb_tracks_all{job=\"ultrafeeder\"})",
+              "editorMode": "code",
+              "expr": "max(readsb_stats_tracks_all{job=\"ultrafeeder\"})",
               "legendFormat": "Tracks",
               "range": true,
               "refId": "A"
@@ -1036,9 +956,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "max(readsb_tracks_single_message{job=\"ultrafeeder\"})",
-              "hide": false,
+              "editorMode": "code",
+              "expr": "max(readsb_stats_tracks_single_message{job=\"ultrafeeder\"})",
               "legendFormat": "Tracks with single message",
               "range": true,
               "refId": "B"
@@ -1133,10 +1052,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "readsb_aircraft_rssi_max{job=\"ultrafeeder\"}",
-              "instant": false,
+              "editorMode": "code",
+              "expr": "max(readsb_aircraft_rssi{job=\"ultrafeeder\"})",
               "legendFormat": "Peak",
               "range": true,
               "refId": "A"
@@ -1146,11 +1063,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "readsb_aircraft_rssi_min{job=\"ultrafeeder\"}",
-              "hide": false,
-              "instant": false,
+              "editorMode": "code",
+              "expr": "min(readsb_aircraft_rssi{job=\"ultrafeeder\"})",
               "legendFormat": "Min signal",
               "range": true,
               "refId": "B"
@@ -1160,11 +1074,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "readsb_aircraft_rssi_median{job=\"ultrafeeder\"}",
-              "hide": false,
-              "instant": false,
+              "editorMode": "code",
+              "expr": "quantile(0.5, readsb_aircraft_rssi{job=\"ultrafeeder\"})",
               "legendFormat": "Median",
               "range": true,
               "refId": "C"
@@ -1174,9 +1085,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "readsb_aircraft_rssi_quart1{job=\"ultrafeeder\"}",
-              "hide": false,
+              "editorMode": "code",
+              "expr": "quantile(0.25, readsb_aircraft_rssi{job=\"ultrafeeder\"})",
               "legendFormat": "1st quartile",
               "range": true,
               "refId": "D"
@@ -1186,10 +1096,9 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "readsb_aircraft_rssi_quart3{job=\"ultrafeeder\"}",
-              "hide": false,
-              "legendFormat": "3rd quartil",
+              "editorMode": "code",
+              "expr": "quantile(0.75, readsb_aircraft_rssi{job=\"ultrafeeder\"})",
+              "legendFormat": "3rd quartile",
               "range": true,
               "refId": "E"
             }
@@ -1280,8 +1189,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "max(readsb_cpu_reader{job=\"ultrafeeder\"}) / 60000",
+              "editorMode": "code",
+              "expr": "max(readsb_stats_cpu_reader{job=\"ultrafeeder\"}) / 60000",
               "legendFormat": "SDR Reader",
               "range": true,
               "refId": "A"
@@ -1291,9 +1200,8 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "max(readsb_cpu_demod{job=\"ultrafeeder\"}) / 60000",
-              "hide": false,
+              "editorMode": "code",
+              "expr": "max(readsb_stats_cpu_demod{job=\"ultrafeeder\"}) / 60000",
               "legendFormat": "Demodulator",
               "range": true,
               "refId": "B"
@@ -1303,255 +1211,14 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "editorMode": "builder",
-              "expr": "max(readsb_cpu_background{job=\"ultrafeeder\"}) / 60000",
-              "hide": false,
+              "editorMode": "code",
+              "expr": "max(readsb_stats_cpu_background{job=\"ultrafeeder\"}) / 60000",
               "legendFormat": "Background",
               "range": true,
               "refId": "C"
             }
           ],
           "title": "readsb CPU",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "max": 50,
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "dB"
-            },
-            "overrides": [
-              {
-                "__systemRef": "hideSeriesFrom",
-                "matcher": {
-                  "id": "byNames",
-                  "options": {
-                    "mode": "exclude",
-                    "names": [
-                      "SDR gain (dB)"
-                    ],
-                    "prefix": "All except:",
-                    "readOnly": true
-                  }
-                },
-                "properties": [
-                  {
-                    "id": "custom.hideFrom",
-                    "value": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": true
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 51
-          },
-          "id": 20,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "builder",
-              "expr": "readsb_sdr_gain{job=\"ultrafeeder\"}",
-              "legendFormat": "SDR gain (dB)",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "SDR Gain",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": true,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "axisSoftMax": 25,
-                "axisSoftMin": -25,
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "log": 2,
-                  "type": "symlog"
-                },
-                "showPoints": "auto",
-                "spanNulls": true,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "dashed"
-                }
-              },
-              "mappings": [],
-              "max": 50,
-              "min": -50,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": -8
-                  },
-                  {
-                    "color": "green",
-                    "value": 0
-                  },
-                  {
-                    "color": "red",
-                    "value": 8
-                  }
-                ]
-              },
-              "unit": "ppm"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 51
-          },
-          "id": 22,
-          "options": {
-            "legend": {
-              "calcs": [
-                "mean",
-                "variance",
-                "stdDev"
-              ],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "expr": "readsb_demod_estimated_ppm{job=\"ultrafeeder\"}",
-              "format": "time_series",
-              "legendFormat": "SDR freq drift (ppm)",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "expr": "avg_over_time(readsb_demod_estimated_ppm{job=\"ultrafeeder\"}[15m])",
-              "hide": false,
-              "legendFormat": "15 min avg",
-              "range": true,
-              "refId": "B"
-            }
-          ],
-          "title": "SDR PPM",
-          "transformations": [],
           "type": "timeseries"
         },
         {
@@ -1589,18 +1256,6 @@ data:
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "nav_modes"
-                },
-                "properties": [
-                  {
-                    "id": "custom.hidden",
-                    "value": false
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
                   "options": "Time"
                 },
                 "properties": [
@@ -1613,24 +1268,36 @@ data:
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "r"
+                  "options": "Value"
                 },
                 "properties": [
                   {
-                    "id": "displayName",
-                    "value": "Tail"
+                    "id": "custom.hidden",
+                    "value": true
                   }
                 ]
               },
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "t"
+                  "options": "hex"
                 },
                 "properties": [
                   {
                     "id": "displayName",
-                    "value": "Type"
+                    "value": "Hex ID"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "type"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Source"
                   }
                 ]
               }
@@ -1640,7 +1307,7 @@ data:
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 59
+            "y": 51
           },
           "hideTimeOverride": true,
           "id": 48,
@@ -1667,7 +1334,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "count by(flight, t, r, nav_modes) (readsb_aircraft_seen{job=\"ultrafeeder\"})",
+              "expr": "count by(flight, hex, category, squawk, type) (readsb_aircraft_seen{job=\"ultrafeeder\"})",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -1686,7 +1353,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 69
+            "y": 61
           },
           "id": 49,
           "panels": [
@@ -1773,6 +1440,6 @@ data:
       "timezone": "",
       "title": "Ultrafeeder Stats",
       "uid": "ultrafeeder",
-      "version": 16,
+      "version": 17,
       "weekStart": ""
     }
