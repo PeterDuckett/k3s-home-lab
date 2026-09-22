@@ -20,3 +20,17 @@ spec:
     # This automatically provisions the required cert-manager CRDs
     crds:
       enabled: true
+
+    # Native chart toggle for a ServiceMonitor against the existing
+    # cert-manager Service (port "tcp-prometheus-servicemonitor" -> 9402,
+    # already there by chart default even with this off). prometheus.enabled
+    # is already the chart default; set explicitly for clarity.
+    # release: kube-prometheus-stack matches our Prometheus's
+    # serviceMonitorSelectorNilUsesHelmValues default (see
+    # infrastructure/monitoring).
+    prometheus:
+      enabled: true
+      servicemonitor:
+        enabled: true
+        labels:
+          release: kube-prometheus-stack
