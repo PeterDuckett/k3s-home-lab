@@ -4,3 +4,4 @@ resources:
   - helm-repository.yaml
   - helm-release.yaml
   - storage-class-ssd.yaml
+  - grafana-dashboard.yaml
