@@ -28,6 +28,10 @@ spec:
       defaultReplicaCount: 3
       createDefaultDiskLabeledNodes: true 
       kubeletRootDir: "/var/lib/rancher/k3s/agent/kubelet"
+      # Live-upgrade volume engines automatically after a Longhorn upgrade,
+      # one volume per node at a time. strict-local volumes (Postgres) are
+      # skipped -- they need an offline upgrade (hibernate CNPG).
+      concurrentAutomaticEngineUpgradePerNodeLimit: 1
     
     # 2. Added tolerations to ALL core system components so they can run on your masters
     longhornCSI:
