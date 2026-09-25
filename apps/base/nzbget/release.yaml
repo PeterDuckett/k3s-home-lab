@@ -11,7 +11,7 @@ spec:
       chart: app-template
       # bjw-s-labs/helm-charts app-template. Verify this is still current
       # when Flux reconciles — pinned to major 3 as of early 2026.
-      version: "3.x"
+      version: "5.x"
       sourceRef:
         kind: HelmRepository
         name: bjw-s
