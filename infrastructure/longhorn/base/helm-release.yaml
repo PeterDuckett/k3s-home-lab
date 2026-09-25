@@ -8,8 +8,8 @@ spec:
   chart:
     spec:
       chart: longhorn
-      # 1. Keep an eye on the version. Standard Longhorn versions are currently 1.7.x / 1.8.x.
-      version: "1.11.x" 
+      # 1. Upgrade one minor at a time (Longhorn only supports N-1 -> N).
+      version: "1.12.x"
       sourceRef:
         kind: HelmRepository
         name: longhorn
@@ -75,3 +75,13 @@ spec:
         enabled: true
         additionalLabels:
           release: kube-prometheus-stack
+
+    # 5. Longhorn 1.12.1+ installs internal NetworkPolicies by default
+    # (restrictInternalTraffic). Cilium enforces them, and they (a) block
+    # cross-namespace Prometheus scraping of longhorn-manager and (b) are
+    # untested on this cluster's Cilium 1.19.7 / no-BTF Pi kernel setup,
+    # where Longhorn warns blocked traffic can hang volume attach/recovery.
+    # Kept off to match pre-1.12 behaviour; enable as a separate, tested
+    # change (with an allow policy for the monitoring namespace).
+    networkPolicies:
+      restrictInternalTraffic: false
