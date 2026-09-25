@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: cert-manager
-      version: "v1.20.x" # Pin this to your preferred stable version
+      version: "1.21.x" # Pin this to your preferred stable version
       sourceRef:
         kind: HelmRepository
         name: jetstack
