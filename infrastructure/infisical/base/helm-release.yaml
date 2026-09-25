@@ -5,6 +5,9 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
+  # Pods have a 100s readiness delay and roll one at a time, which overruns
+  # Helm's default 5m wait on ARM.
+  timeout: 10m
   chart:
     spec:
       chart: infisical-standalone
