@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits"
+  ],
+  "timezone": "Europe/London",
+  "flux": {
+    "managerFilePatterns": ["/\\.ya?ml$/"]
+  },
+  "helm-values": {
+    "managerFilePatterns": ["/\\.ya?ml$/"]
+  },
+  "kubernetes": {
+    "managerFilePatterns": ["/\\.ya?ml$/"]
+  },
+  "packageRules": [
+    {
+      "description": "Low-risk updates merge themselves. The repo has no CI, so there are no checks to wait for.",
+      "matchUpdateTypes": ["patch", "digest"],
+      "automerge": true,
+      "ignoreTests": true
+    }
+  ]
+}
