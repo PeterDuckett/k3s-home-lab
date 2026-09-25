@@ -60,6 +60,11 @@ spec:
         tolerations: *control-plane-tolerations
 
     grafana:
+      # Single replica on a ReadWriteOnce volume: a RollingUpdate surge pod
+      # can't attach the PVC while the old pod holds it, so upgrades hang
+      # until Helm times out. Recreate stops the old pod first.
+      deploymentStrategy:
+        type: Recreate
       persistence:
         enabled: true
         type: pvc
