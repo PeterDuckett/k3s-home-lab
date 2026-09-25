@@ -7,20 +7,53 @@
   ],
   "timezone": "Europe/London",
   "flux": {
-    "managerFilePatterns": ["/\\.ya?ml$/"]
+    "managerFilePatterns": [
+      "/\\.ya?ml$/"
+    ]
   },
   "helm-values": {
-    "managerFilePatterns": ["/\\.ya?ml$/"]
+    "managerFilePatterns": [
+      "/\\.ya?ml$/"
+    ]
   },
   "kubernetes": {
-    "managerFilePatterns": ["/\\.ya?ml$/"]
+    "managerFilePatterns": [
+      "/\\.ya?ml$/"
+    ]
   },
   "packageRules": [
     {
       "description": "Low-risk updates merge themselves. The repo has no CI, so there are no checks to wait for.",
-      "matchUpdateTypes": ["patch", "digest"],
+      "matchUpdateTypes": [
+        "patch",
+        "digest"
+      ],
       "automerge": true,
       "ignoreTests": true
+    },
+    {
+      "description": "Cilium is pinned to 1.19.7: 1.19.8+ and 1.20.2 need kernel BTF, which the Pi worker kernels lack, and pod networking on those nodes stops (cilium/cilium#48778). See infrastructure/cilium/base/helm-release.yaml.",
+      "matchPackageNames": [
+        "cilium"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Flux controllers and CRDs must move together; upgrade by regenerating gotk-components.yaml.",
+      "matchPackageNames": [
+        "fluxcd/flux2",
+        "ghcr.io/fluxcd/**"
+      ],
+      "groupName": "flux",
+      "automerge": false
+    },
+    {
+      "description": "High-impact upgrades only get a PR when approved on the Dependency Dashboard.",
+      "matchPackageNames": [
+        "app-template",
+        "longhorn"
+      ],
+      "dependencyDashboardApproval": true
     }
   ]
 }
