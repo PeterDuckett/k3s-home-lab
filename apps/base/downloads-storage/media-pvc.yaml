@@ -1,0 +1,21 @@
+# Media library on the second node-2-3 SSD (ssd2). longhorn-ssd is
+# single-replica, so there is no redundancy -- losing that SSD loses the
+# library. 900Gi is sized to fit ssd2 (983G) on its own; ssd1 is already
+# mostly scheduled by downloads-ssd, so Longhorn can only place this on ssd2.
+#
+# ReadWriteMany (Longhorn share-manager/NFS) so Plex can run on an RK1 while
+# the *arr apps can mount the same library later from wherever they run.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-library
+  namespace: downloads
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: longhorn-ssd
+  resources:
+    requests:
+      storage: 900Gi

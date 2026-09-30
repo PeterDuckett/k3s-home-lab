@@ -18,6 +18,7 @@ resources:
   - mylar
   - tdarr
   - maintainerr
+  - plex
   # readarr and plaxt removed -- no arm64 image available for either
   # (readarr:develop has no arm64 manifest, plaxt image is amd64-only),
   # permanently broken on this cluster's arm64 nodes.
