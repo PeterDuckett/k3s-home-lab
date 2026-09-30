@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - pvc.yaml
+  - media-pvc.yaml
   - default-serviceaccount.yaml
