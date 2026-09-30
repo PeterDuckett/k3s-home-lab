@@ -1,0 +1,106 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: plex
+  namespace: media
+spec:
+  releaseName: plex
+  chart:
+    spec:
+      chart: app-template
+      version: "5.x"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  interval: 15m
+  timeout: 5m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    defaultPodOptions:
+      # RK1 nodes only -- the CM4s don't have the CPU/RAM for software
+      # transcoding (no Plex hardware transcode support on Rockchip).
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node-1-2
+                      - node-1-3
+                      - node-1-4
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: lscr.io/linuxserver/plex
+              tag: latest
+            env:
+              PUID: "1000"
+              PGID: "1000"
+              TZ: "Etc/UTC"
+              VERSION: docker
+            resources:
+              requests:
+                cpu: 500m
+                memory: 1Gi
+              limits:
+                cpu: "4"
+                memory: 4Gi
+    service:
+      main:
+        controller: main
+        # LoadBalancer (Cilium LB IPAM, see infrastructure/cilium/overlays/prod/bgp-config)
+        # so TVs/apps on the LAN connect straight to Plex rather than via
+        # Cloudflare. Pinned so it can be entered in Plex's "Custom server
+        # access URLs". externalTrafficPolicy: Local keeps the real client IP,
+        # which Plex needs to treat LAN clients as local (no relay/bandwidth
+        # limits); with BGP only the node running Plex advertises the IP.
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        annotations:
+          lbipam.cilium.io/ips: "10.14.100.102"
+        ports:
+          http:
+            port: 32400
+    ingress:
+      main:
+        className: traefik
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        hosts:
+          - host: &host plex.peterduckett.me
+            paths:
+              - path: /
+                pathType: Prefix
+                service:
+                  identifier: main
+                  port: http
+        tls:
+          - secretName: plex-tls
+            hosts:
+              - *host
+    persistence:
+      config:
+        existingClaim: plex-config
+        globalMounts:
+          - path: /config
+      media:
+        existingClaim: media-library
+        globalMounts:
+          - path: /media
+      transcode:
+        type: emptyDir
+        sizeLimit: 20Gi
+        globalMounts:
+          - path: /transcode
