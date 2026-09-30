@@ -56,7 +56,8 @@ spec:
                 memory: 1Gi
               limits:
                 cpu: "4"
-                memory: 4Gi
+                # Includes the RAM-backed /transcode below
+                memory: 8Gi
     service:
       main:
         controller: main
@@ -99,8 +100,12 @@ spec:
         existingClaim: media-library
         globalMounts:
           - path: /media
+      # RAM-backed: a disk emptyDir lands on the RK1's 32GB eMMC root
+      # (/dev/mmcblk0p2), not the NVMe -- transcoding would wear the eMMC
+      # and could fill the node's OS disk.
       transcode:
         type: emptyDir
-        sizeLimit: 20Gi
+        medium: Memory
+        sizeLimit: 4Gi
         globalMounts:
           - path: /transcode
