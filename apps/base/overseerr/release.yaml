@@ -24,17 +24,36 @@ spec:
     remediation:
       retries: 3
   values:
+    # Seerr is the merged successor to Overseerr/Jellyseerr
+    # (https://docs.seerr.dev/migration-guide/). It reuses the existing
+    # overseerr-config volume and migrates settings.json + db on first start.
+    # Names (release, Service, host, PVC) are kept as "overseerr" so nothing
+    # that links to it has to change.
+    #
+    # Unlike the linuxserver image it runs as the non-root `node` user (1000)
+    # with config at /app/config, not /config. Security settings mirror the
+    # upstream seerr-chart.
     controllers:
       main:
+        pod:
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
         containers:
           main:
             image:
-              repository: lscr.io/linuxserver/overseerr
+              repository: ghcr.io/seerr-team/seerr
               tag: latest
             env:
-              PUID: "1000"
-              PGID: "1000"
               TZ: "Etc/UTC"
+            securityContext:
+              runAsUser: 1000
+              runAsGroup: 1000
+              runAsNonRoot: true
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
             resources:
               requests:
                 cpu: 15m
@@ -69,4 +88,4 @@ spec:
       config:
         existingClaim: overseerr-config
         globalMounts:
-          - path: /config
+          - path: /app/config
