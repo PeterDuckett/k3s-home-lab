@@ -38,12 +38,14 @@ spec:
               PGID: "1000"
               TZ: "Etc/UTC"
             resources:
+              # Sized for ArticleCache=500 (MB) set in nzbget.conf on the
+              # config PVC: cache + process + unpack headroom.
               requests:
-                cpu: 15m
-                memory: 128Mi
+                cpu: 100m
+                memory: 256Mi
               limits:
-                cpu: 500m
-                memory: 512Mi
+                cpu: "2"
+                memory: 1Gi
     service:
       main:
         controller: main
