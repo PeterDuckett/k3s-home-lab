@@ -57,7 +57,10 @@ spec:
                 value: letsencrypt-prod
   values:
     hostname: rancher.peterduckett.me # Update to match your local network's DNS/UDM Pro setup
-    replicas: 3
+    # 1 replica (was 3) -- each pod uses ~1.3-1.8Gi RAM and Rancher is only
+    # used occasionally for its UI; 3 copies cost ~4.5Gi across the RK1s for
+    # HA nobody needs here. Brief UI downtime during upgrades is fine.
+    replicas: 1
 
     # bootstrapPassword was removed 2026-09-18: Rancher was already
     # bootstrapped (first-login=false), and leaving this set is only ever
