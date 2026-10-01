@@ -27,14 +27,15 @@ spec:
     # recyclarr is a config-sync CLI tool (TRaSH guides -> Sonarr/
     # Radarr), not a web app -- no Service/port. CRON_SCHEDULE keeps
     # it running continuously and syncing on a schedule instead of
-    # running once and exiting.
-    #
-    # It won't do anything useful until you populate
-    # /config/recyclarr.yml with your real Sonarr/Radarr URLs and API
-    # keys -- exec into the pod once it's up to create it, or copy one
-    # in via kubectl cp.
+    # running once and exiting. Config lives in configmap.yaml.
     controllers:
       main:
+        pod:
+          # Image runs as uid 1000 (gid 0); without fsGroup the Longhorn PVC
+          # is root-owned and every run dies with "Access to the path
+          # '/config/state' is denied" -- confirmed 2026-10-01.
+          securityContext:
+            fsGroup: 1000
         containers:
           main:
             image:
@@ -43,6 +44,11 @@ spec:
             env:
               TZ: "Etc/UTC"
               CRON_SCHEDULE: "0 */6 * * *"
+            # RADARR_API_KEY, SONARR_API_KEY -- read via !env_var in
+            # recyclarr.yml.
+            envFrom:
+              - secretRef:
+                  name: recyclarr-secret
             resources:
               requests:
                 cpu: 15m
@@ -55,3 +61,9 @@ spec:
         existingClaim: recyclarr-config
         globalMounts:
           - path: /config
+      configs:
+        type: configMap
+        name: recyclarr-configs
+        globalMounts:
+          - path: /config/configs
+            readOnly: true
