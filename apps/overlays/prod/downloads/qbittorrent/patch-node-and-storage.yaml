@@ -15,7 +15,7 @@ spec:
         existingClaim: downloads-ssd
         globalMounts:
           - path: /downloads
-      # Finished downloads go to /media/downloads/complete on the shared
+      # Finished downloads go to /media/downloads/torrent on the shared
       # library so the *arr apps can import with a hardlink/rename on the
       # same filesystem instead of copying across volumes.
       media:
