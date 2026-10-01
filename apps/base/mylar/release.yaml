@@ -72,3 +72,9 @@ spec:
         existingClaim: mylar-config
         globalMounts:
           - path: /config
+      # Same /media path as the rest of the stack, so mylar can import
+      # finished downloads into /media/comics without path mappings.
+      media:
+        existingClaim: media-library
+        globalMounts:
+          - path: /media

@@ -70,3 +70,10 @@ spec:
         existingClaim: radarr-config
         globalMounts:
           - path: /config
+      # Same path as in nzbget/qbittorrent, so no remote path mappings are
+      # needed and imports from /media/downloads/{usenet,torrent} stay on one
+      # filesystem.
+      media:
+        existingClaim: media-library
+        globalMounts:
+          - path: /media
