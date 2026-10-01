@@ -9,7 +9,16 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: node-2-3
     persistence:
+      # Local RWO scratch for in-progress downloads only; pins the pod to
+      # node-2-3.
       downloads:
         existingClaim: downloads-ssd
         globalMounts:
           - path: /downloads
+      # Finished downloads go to /media/downloads/complete on the shared
+      # library so the *arr apps can import with a hardlink/rename on the
+      # same filesystem instead of copying across volumes.
+      media:
+        existingClaim: media-library
+        globalMounts:
+          - path: /media
