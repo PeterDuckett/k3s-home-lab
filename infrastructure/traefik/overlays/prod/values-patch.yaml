@@ -80,31 +80,71 @@ spec:
           middlewares:
             - kube-system-security-headers@kubernetescrd
 
-    # Global TLS policy: TLS 1.2 floor, and reject handshakes whose SNI does
-    # not match a configured host (bare-IP / scanner probes get no response).
+    # Global TLS policy: TLS 1.3 only (Cloudflare->origin and all current
+    # clients support it), and reject handshakes whose SNI does not match a
+    # configured host (bare-IP / scanner probes get no response). If an
+    # old LAN-only client breaks, drop back to VersionTLS12 here.
     tlsOptions:
       default:
-        minVersion: VersionTLS12
+        minVersion: VersionTLS13
         sniStrict: true
+
+    # JSON access logs on stdout (kubectl logs now; Loki later). Headers are
+    # dropped by default so cookies / Authorization never get logged -- only
+    # the ones useful for spotting abuse are kept. Query parameters are
+    # dropped because *arr apikey= and Plex X-Plex-Token= ride in the URL.
+    accessLog:
+      enabled: true
+      format: json
+      fields:
+        defaultMode: keep
+        headers:
+          defaultMode: drop
+          names:
+            User-Agent: keep
+            CF-Connecting-IP: keep
+            CF-IPCountry: keep
+            X-Forwarded-For: keep
+        queryParameters:
+          defaultMode: drop
+
+    # Never let a drain/eviction take more than one replica down at once.
+    podDisruptionBudget:
+      enabled: true
+      maxUnavailable: 1
+
+    # Observed 2-3m CPU / 43-91Mi per pod. No CPU limit (avoids throttling
+    # on bursts); the memory limit also drives GOMEMLIMIT via the chart's
+    # goMemLimitPercentage.
+    resources:
+      requests:
+        cpu: 50m
+        memory: 96Mi
+      limits:
+        memory: 256Mi
 
     # Layout rules for your RK1 and RPi mixed cluster
     deployment:
       replicas: 3
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: Exists
-        podAntiAffinity: # <-- Moved inside the affinity block
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: app.kubernetes.io/name
-                      operator: In
-                      values:
-                        - traefik
-                topologyKey: kubernetes.io/hostname
+
+    # Top-level `affinity` is the chart key -- it previously sat under
+    # `deployment:`, where the chart silently ignored it (a replica was
+    # running on node-sdr). Pin to the RK1 control-plane nodes, one per node.
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - traefik
+              topologyKey: kubernetes.io/hostname
