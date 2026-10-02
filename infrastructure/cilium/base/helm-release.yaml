@@ -41,8 +41,14 @@ spec:
     ipam:
       operator:
         clusterPoolIPv4PodCIDRList: ["10.42.0.0/16"]
-    k8sServiceHost: "10.14.100.13"
-    k8sServicePort: 6443
+    # k3s local API endpoint, present on every node: on agents it is the
+    # client-side load balancer across all three servers, on servers it
+    # is the local kube-apiserver. Avoids pinning Cilium to one control
+    # plane node (kube-proxy is disabled, so Cilium must reach the API
+    # without a ClusterIP). cilium-agent and cilium-operator are both
+    # hostNetwork, so 127.0.0.1 is the node's loopback.
+    k8sServiceHost: "127.0.0.1"
+    k8sServicePort: 6444
     kubeProxyReplacement: true
     envoy:
       enabled: false
