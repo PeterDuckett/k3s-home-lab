@@ -10,7 +10,7 @@ spec:
     spec:
       chart: kube-prometheus-stack
       # Track the 91.x line. Check for newer majors periodically.
-      version: "91.x"
+      version: "92.x"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
