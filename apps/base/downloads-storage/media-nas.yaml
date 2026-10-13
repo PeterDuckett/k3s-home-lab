@@ -1,0 +1,51 @@
+# Media library on the UGREEN NAS (DXP2800, 10.14.100.90, Lab VLAN), replacing
+# the single-replica Longhorn media-library volume for the *arr apps and
+# download clients. Same layout as before (/tv, /movies, /music, /comics,
+# /downloads/{usenet,torrent}), mounted at /media, so no in-app paths change.
+#
+# nfsvers=3 is pinned on purpose: the NAS advertises NFSv4 but refuses every
+# v4 mount ("No such file or directory", tested 2026-10-13), so without the
+# pin each mount would depend on the client silently falling back to v3.
+#
+# The export squashes all clients to uid 1000 / gid 10 on the NAS, so file
+# ownership is the same whichever pod writes.
+#
+# Static PV: Retain + prune disabled so removing these manifests can never
+# touch the data on the NAS.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-nas
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  capacity:
+    storage: 20Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  mountOptions:
+    - nfsvers=3
+  nfs:
+    server: 10.14.100.90
+    path: /volume1/media
+  claimRef:
+    namespace: downloads
+    name: media-nas
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-nas
+  namespace: downloads
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: media-nas
+  resources:
+    requests:
+      storage: 20Ti

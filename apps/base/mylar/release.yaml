@@ -75,6 +75,6 @@ spec:
       # Same /media path as the rest of the stack, so mylar can import
       # finished downloads into /media/comics without path mappings.
       media:
-        existingClaim: media-library
+        existingClaim: media-nas
         globalMounts:
           - path: /media

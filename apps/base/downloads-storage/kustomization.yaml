@@ -4,4 +4,5 @@ resources:
   - namespace.yaml
   - pvc.yaml
   - media-pvc.yaml
+  - media-nas.yaml
   - default-serviceaccount.yaml
