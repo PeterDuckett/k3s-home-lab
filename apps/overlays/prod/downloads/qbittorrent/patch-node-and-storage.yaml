@@ -19,6 +19,6 @@ spec:
       # library so the *arr apps can import with a hardlink/rename on the
       # same filesystem instead of copying across volumes.
       media:
-        existingClaim: media-library
+        existingClaim: media-nas
         globalMounts:
           - path: /media

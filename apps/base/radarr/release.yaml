@@ -74,6 +74,6 @@ spec:
       # needed and imports from /media/downloads/{usenet,torrent} stay on one
       # filesystem.
       media:
-        existingClaim: media-library
+        existingClaim: media-nas
         globalMounts:
           - path: /media

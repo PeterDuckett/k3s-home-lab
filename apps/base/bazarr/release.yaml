@@ -73,6 +73,6 @@ spec:
       # Subtitles are written next to the video files, so bazarr needs the
       # library at the same /media path sonarr/radarr report to it.
       media:
-        existingClaim: media-library
+        existingClaim: media-nas
         globalMounts:
           - path: /media
