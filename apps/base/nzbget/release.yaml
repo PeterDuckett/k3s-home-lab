@@ -39,13 +39,19 @@ spec:
               TZ: "Etc/UTC"
             resources:
               # Sized for ArticleCache=500 (MB) set in nzbget.conf on the
-              # config PVC: cache + process + unpack headroom.
+              # config PVC: cache + process + unpack headroom. Observed
+              # ~870Mi working set while downloading (2026-10-15), too close
+              # to the old 1Gi limit for an OOM kill mid-repair to be safe.
               requests:
                 cpu: 100m
-                memory: 256Mi
+                memory: 512Mi
+              # cpu limit 3 of node-2-3's 4 cores: par2 repair was throttled
+              # at 2 (~15% of CFS periods). The low 100m request keeps the
+              # Longhorn engine (which NZBGet's own I/O depends on) ahead
+              # under contention.
               limits:
-                cpu: "2"
-                memory: 1Gi
+                cpu: "3"
+                memory: 2Gi
     service:
       main:
         controller: main
