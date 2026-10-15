@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plex-nas
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: plex.peterduckett.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: plex-nas
+                port:
+                  number: 32400
+  tls:
+    - hosts:
+        - plex.peterduckett.me
+      secretName: plex-nas-tls

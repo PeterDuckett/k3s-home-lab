@@ -1,0 +1,18 @@
+# Plex now runs on the UGREEN NAS in Docker, outside the cluster. This
+# selectorless Service is the stable in-cluster handle (same pattern as
+# apps/base/home-assistant); the overlay supplies a matching EndpointSlice
+# with the NAS address.
+#
+# Named plex-nas rather than plex so it can't collide with the old
+# app-template plex Service while Flux prunes that HelmRelease.
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex-nas
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 32400
+      targetPort: 32400
+      protocol: TCP
