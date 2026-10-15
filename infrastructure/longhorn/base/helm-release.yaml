@@ -32,6 +32,11 @@ spec:
       # one volume per node at a time. strict-local volumes (Postgres) are
       # skipped -- they need an offline upgrade (hibernate CNPG).
       concurrentAutomaticEngineUpgradePerNodeLimit: 1
+      # Lets system-managed components (instance-manager, engine-image, CSI)
+      # run on node-2-3, tainted dedicated=downloads:NoSchedule. Danger-zone
+      # setting: changing it requires ALL volumes detached. Applied live
+      # 2026-10-15 in a maintenance window; kept here so it isn't reset.
+      taintToleration: "dedicated=downloads:NoSchedule"
     
     # 2. Added tolerations to ALL core system components so they can run on your masters
     # and on node-2-3 (tainted dedicated=downloads:NoSchedule). System-managed
