@@ -1,0 +1,18 @@
+# Points the base plex-nas Service at Plex on the UGREEN NAS (DXP2800,
+# Lab VLAN). Update the address here if the NAS ever moves.
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: plex-nas
+  labels:
+    kubernetes.io/service-name: plex-nas
+addressType: IPv4
+ports:
+  - name: http
+    port: 32400
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 10.14.100.90
+    conditions:
+      ready: true
