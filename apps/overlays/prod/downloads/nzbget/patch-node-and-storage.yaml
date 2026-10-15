@@ -8,6 +8,13 @@ spec:
     defaultPodOptions:
       nodeSelector:
         kubernetes.io/hostname: node-2-3
+      # node-2-3 is tainted dedicated=downloads:NoSchedule so only the
+      # download clients (plus system DaemonSets) run there.
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "downloads"
+          effect: "NoSchedule"
     persistence:
       # Local RWO scratch for in-progress downloads only; pins the pod to
       # node-2-3.
