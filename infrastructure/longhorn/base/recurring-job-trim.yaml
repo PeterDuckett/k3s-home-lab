@@ -1,4 +1,4 @@
-# Weekly filesystem trim for every volume in the "default" recurring-job
+# Daily filesystem trim for every volume in the "default" recurring-job
 # group (all volumes are in it by default). Longhorn doesn't reclaim blocks
 # when files are deleted inside a volume, so churny volumes like
 # downloads-ssd grow to their full size on the node disk over time; a trim
@@ -10,12 +10,12 @@
 apiVersion: longhorn.io/v1beta2
 kind: RecurringJob
 metadata:
-  name: filesystem-trim-weekly
+  name: filesystem-trim-daily
   namespace: longhorn-system
 spec:
   task: filesystem-trim
-  # Sunday 04:00 (UTC), when the media stack is quiet
-  cron: "0 4 * * 0"
+  # Daily 04:00 (UTC), when the media stack is quiet
+  cron: "0 4 * * *"
   groups:
     - default
   concurrency: 1
