@@ -83,7 +83,19 @@ spec:
       tolerations: *control-plane-tolerations
 
     prometheus-node-exporter:
-      tolerations: *control-plane-tolerations
+      # Must run on every node, including node-2-3, which is tainted
+      # dedicated=downloads:NoSchedule.
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "dedicated"
+          operator: "Equal"
+          value: "downloads"
+          effect: "NoSchedule"
 
     kube-state-metrics:
       tolerations: *control-plane-tolerations

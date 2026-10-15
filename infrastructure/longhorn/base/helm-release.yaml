@@ -34,6 +34,9 @@ spec:
       concurrentAutomaticEngineUpgradePerNodeLimit: 1
     
     # 2. Added tolerations to ALL core system components so they can run on your masters
+    # and on node-2-3 (tainted dedicated=downloads:NoSchedule). System-managed
+    # components (instance-manager, engine-image, CSI) get the same toleration
+    # from the taint-toleration setting, which needs all volumes detached.
     longhornCSI:
       kubeletRootDir: "/var/lib/rancher/k3s/agent/kubelet"
       tolerations:
@@ -52,6 +55,10 @@ spec:
         - key: "node-role.kubernetes.io/master"
           operator: "Exists"
           effect: "NoSchedule"
+        - key: "dedicated"
+          operator: "Equal"
+          value: "downloads"
+          effect: "NoSchedule"
 
     longhornDriver:
       tolerations:
@@ -60,6 +67,10 @@ spec:
           effect: "NoSchedule"
         - key: "node-role.kubernetes.io/master"
           operator: "Exists"
+          effect: "NoSchedule"
+        - key: "dedicated"
+          operator: "Equal"
+          value: "downloads"
           effect: "NoSchedule"
 
     # 3. Standard helm values mapping for the driver deployer environment variable
