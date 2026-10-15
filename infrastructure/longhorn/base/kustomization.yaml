@@ -4,4 +4,5 @@ resources:
   - helm-repository.yaml
   - helm-release.yaml
   - storage-class-ssd.yaml
+  - recurring-job-trim.yaml
   - grafana-dashboard.yaml
