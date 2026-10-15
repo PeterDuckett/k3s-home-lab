@@ -39,13 +39,15 @@ spec:
               TZ: "Etc/UTC"
             resources:
               # Sized for ArticleCache=500 (MB) set in nzbget.conf on the
-              # config PVC: cache + process + unpack headroom.
+              # config PVC: cache + process + unpack headroom. Observed
+              # ~870Mi working set while downloading (2026-10-15), too close
+              # to the old 1Gi limit for an OOM kill mid-repair to be safe.
               requests:
                 cpu: 100m
-                memory: 256Mi
+                memory: 512Mi
               limits:
                 cpu: "2"
-                memory: 1Gi
+                memory: 2Gi
     service:
       main:
         controller: main
