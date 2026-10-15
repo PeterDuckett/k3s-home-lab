@@ -45,8 +45,12 @@ spec:
               requests:
                 cpu: 100m
                 memory: 512Mi
+              # cpu limit 3 of node-2-3's 4 cores: par2 repair was throttled
+              # at 2 (~15% of CFS periods). The low 100m request keeps the
+              # Longhorn engine (which NZBGet's own I/O depends on) ahead
+              # under contention.
               limits:
-                cpu: "2"
+                cpu: "3"
                 memory: 2Gi
     service:
       main:
