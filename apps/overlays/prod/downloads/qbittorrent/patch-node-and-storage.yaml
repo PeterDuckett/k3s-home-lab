@@ -16,10 +16,16 @@ spec:
           value: "downloads"
           effect: "NoSchedule"
     persistence:
-      # Local RWO scratch for in-progress downloads only; pins the pod to
-      # node-2-3.
+      # In-progress downloads scratch: node-2-3's ssd1 as a plain hostPath
+      # (it used to be a single-replica Longhorn volume, and the Longhorn
+      # engine cost ~1.5 cores of the CM4 serving NZBGet's I/O). The disk is
+      # mounted at /mnt/ssd1 with nofail, so point at a subdirectory that only
+      # exists on the SSD: with hostPathType Directory, the pod refuses to
+      # start if the disk isn't mounted instead of filling the root fs.
       downloads:
-        existingClaim: downloads-ssd
+        type: hostPath
+        hostPath: /mnt/ssd1/downloads
+        hostPathType: Directory
         globalMounts:
           - path: /downloads
       # Finished downloads go to /media/downloads/torrent on the shared
