@@ -1,9 +1,9 @@
 # Daily filesystem trim for every volume in the "default" recurring-job
 # group (all volumes are in it by default). Longhorn doesn't reclaim blocks
-# when files are deleted inside a volume, so churny volumes like
-# downloads-ssd grow to their full size on the node disk over time; a trim
-# hands the freed blocks back. A manual trim on downloads-ssd on 2026-10-15
-# reclaimed ~200G on node-2-3 ssd1.
+# when files are deleted inside a volume, so churny volumes grow to their
+# full size on the node disk over time; a trim hands the freed blocks back.
+# A manual trim on the old downloads-ssd volume on 2026-10-15 reclaimed
+# ~200G on node-2-3 ssd1.
 #
 # Trim only reclaims space in the volume head -- data still referenced by
 # snapshots stays (remove-snapshots-during-filesystem-trim is false).
