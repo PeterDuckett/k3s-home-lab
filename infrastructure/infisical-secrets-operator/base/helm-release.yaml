@@ -28,3 +28,14 @@ spec:
     # Fallback default when a CRD doesn't specify its own connection address --
     # points at the self-hosted instance's internal Service, not app.infisical.com.
     hostAPI: "http://infisical-infisical-infisical-standalone-infisical.infisical.svc.cluster.local:8080/api"
+    controllerManager:
+      manager:
+        # Chart default 128Mi limit OOMKilled the manager 12 times on
+        # 2026-10-16/17 (steady state ~60Mi, spikes while syncing).
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
