@@ -90,6 +90,11 @@ spec:
 
     kubelet:
       serviceMonitor:
+        # Chart default is 10s (kubelet's cAdvisor housekeeping minimum).
+        # 30s matches every other job and cuts per-container scrape work
+        # on all 8 kubelets and in Prometheus by ~3x; dashboards use
+        # [5m] rate windows, so nothing loses resolution that matters.
+        cAdvisorInterval: 30s
         # k3s runs the apiserver and kubelet in one process, so each
         # control-plane kubelet's /metrics re-exports every apiserver_* and
         # etcd_* series the apiserver job already scrapes from :6443 (~80%

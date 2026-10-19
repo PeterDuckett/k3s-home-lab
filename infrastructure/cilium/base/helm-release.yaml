@@ -52,5 +52,11 @@ spec:
     kubeProxyReplacement: true
     envoy:
       enabled: false
+    # Hubble was on by default but nothing reads it: no relay, no UI,
+    # metrics disabled. Every agent was still processing ~300 flows/s
+    # into a permanently full ring buffer (2026-10-19). Re-enable along
+    # with hubble.relay/ui if flow visibility is ever wanted.
+    hubble:
+      enabled: false
     bgpControlPlane:
       enabled: true
