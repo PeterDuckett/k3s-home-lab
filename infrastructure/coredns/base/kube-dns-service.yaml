@@ -1,0 +1,43 @@
+# The cluster DNS Service every pod's resolv.conf points at (kubelet
+# --cluster-dns=10.43.0.10, plus the IPv6 address k3s adds on this
+# dual-stack cluster). Previously created by k3s's packaged CoreDNS
+# addon; owned here so it survives `disable: [coredns]` in k3s. Spec is
+# a copy of what k3s created (2026-10-19) -- the clusterIPs are
+# immutable, so they must match exactly or the apply fails.
+#
+# Selects k8s-app=kube-dns, which the Helm CoreDNS pods carry via
+# k8sAppLabelOverride (see helm-release.yaml).
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-dns
+  namespace: kube-system
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: CoreDNS
+spec:
+  type: ClusterIP
+  clusterIP: 10.43.0.10
+  clusterIPs:
+    - 10.43.0.10
+    - 2001:db8:43::a
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: RequireDualStack
+  selector:
+    k8s-app: kube-dns
+  ports:
+    - name: dns
+      port: 53
+      protocol: UDP
+      targetPort: 53
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+      targetPort: 53
+    - name: metrics
+      port: 9153
+      protocol: TCP
+      targetPort: 9153
