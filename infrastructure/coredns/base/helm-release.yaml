@@ -100,6 +100,25 @@ spec:
               10.14.100.50 node-sdr
               ttl 60
               fallthrough
+          # Pods are IPv4-only (Cilium enable-ipv6=false), but apps still
+          # ask for AAAA alongside A (~1:1 on 2026-10-19), get real IPv6
+          # addresses for internet names, and waste a failed connect before
+          # falling back to IPv4. Answer AAAA for non-.local names with an
+          # empty NOERROR (NODATA) instead of forwarding upstream.
+          #
+          # Scoped to names whose last label isn't "local" (RE2 has no
+          # negative lookahead, hence the spelled-out alternation) so
+          # cluster.local keeps normal NXDOMAIN semantics: musl (Alpine
+          # images) stops walking the search path on the first NODATA,
+          # which would break short-name lookups from hostNetwork pods that
+          # autopath can't help. Non-matching AAAA falls through as normal.
+          # Remove this block if pods ever get IPv6.
+          - name: template
+            parameters: IN AAAA .
+            configBlock: |-
+              match "^.+\.([^l.][^.]*|l[^o.][^.]*|lo[^c.][^.]*|loc[^a.][^.]*|loca[^l.][^.]*|local[^.]+|l|lo|loc|loca)\.$"
+              rcode NOERROR
+              fallthrough
           - name: prometheus
             parameters: 0.0.0.0:9153
           # Explicit upstreams, matching what every node's resolv.conf
