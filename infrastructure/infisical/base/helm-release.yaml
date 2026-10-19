@@ -48,7 +48,8 @@ spec:
 
     # 1. Main Infisical Application Settings
     backend:
-      replicaCount: 2
+      # One per RK1 control-plane node.
+      replicaCount: 3
       # Generate a random 32-byte hex string for this key before deploying
       encryptionKey: "f3cbe836dabccc0da275d03d4be8b689a1699e910c036418130485eec6d3fce6"
       

@@ -25,6 +25,16 @@ spec:
     remediation:
       retries: 3
   values:
+    # k3s runs the controller-manager and scheduler inside the k3s process
+    # (no scrapeable endpoints), and kube-proxy is replaced by Cilium. Their
+    # targets never exist, so the *Down alerts fire permanently. Disabling
+    # the components also drops their ServiceMonitors and alert rules.
+    kubeControllerManager:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false
     # Same reasoning as infrastructure/longhorn/base/helm-release.yaml: the
     # control-plane nodes aren't tainted today, but tolerate the standard
     # taints anyway so this keeps scheduling if that ever changes.
