@@ -155,7 +155,9 @@ spec:
                 cpu: 150m
                 memory: 256Mi
               limits:
-                cpu: 500m
+                # 500m throttled 9% of CFS periods (2026-10-19); readsb +
+                # mlathub + telegraf burst together on busy traffic.
+                cpu: "1"
                 memory: 512Mi
     service:
       main:

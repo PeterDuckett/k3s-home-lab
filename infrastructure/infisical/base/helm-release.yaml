@@ -33,6 +33,14 @@ spec:
         initialDelaySeconds: 100  # Increased from default 10 to give ARM nodes breathing room
         periodSeconds: 10
         failureThreshold: 3
+      # Chart default is a 1000Mi limit; both pods sat at 82-84% of it
+      # (814-865Mi) on 2026-10-19 with no headroom for a burst.
+      resources:
+        limits:
+          memory: 1536Mi
+        requests:
+          cpu: 350m
+          memory: 1Gi
 
     secrets:
       encryptionKey: "f3cbe836dabccc0da275d03d4be8b689a1699e910c036418130485eec6d3fce6"

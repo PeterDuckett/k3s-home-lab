@@ -61,6 +61,13 @@ spec:
     # used occasionally for its UI; 3 copies cost ~4.5Gi across the RK1s for
     # HA nobody needs here. Brief UI downtime during upgrades is fine.
     replicas: 1
+    # Had no requests, so the scheduler counted ~3.3Gi of real usage as
+    # zero. No memory limit: Rancher's caches grow with cluster objects
+    # and an OOM loop here would break k3s upgrades.
+    resources:
+      requests:
+        cpu: 250m
+        memory: 3Gi
 
     # bootstrapPassword was removed 2026-09-18: Rancher was already
     # bootstrapped (first-login=false), and leaving this set is only ever

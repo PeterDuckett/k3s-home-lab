@@ -31,6 +31,15 @@ spec:
     prometheus:
       prometheusSpec:
         retention: 15d
+        # Had no requests, so the scheduler counted ~3Gi of real usage as
+        # zero on node-1-2. Sized for ~230k head series after PR #67; no
+        # CPU limit (compaction bursts would just get throttled).
+        resources:
+          requests:
+            cpu: 250m
+            memory: 2Gi
+          limits:
+            memory: 4Gi
         storageSpec:
           volumeClaimTemplate:
             spec:
