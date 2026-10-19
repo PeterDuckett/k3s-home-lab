@@ -79,6 +79,22 @@ spec:
       #   kubectl -n monitoring get secret kube-prometheus-stack-grafana \
       #     -o jsonpath='{.data.admin-password}' | base64 -d
 
+    kubelet:
+      serviceMonitor:
+        # k3s runs the apiserver and kubelet in one process, so each
+        # control-plane kubelet's /metrics re-exports every apiserver_* and
+        # etcd_* series the apiserver job already scrapes from :6443 (~80%
+        # of this job's series). Drop the copies here; the apiserver job
+        # keeps the full set. Applies to /metrics only, not cadvisor/probes.
+        metricRelabelings:
+          # Chart default, repeated because setting this list replaces it.
+          - sourceLabels: [__name__, le]
+            regex: "(csi_operations|storage_operation_duration)_seconds_bucket;(0.25|2.5|15|25|120|600)(\\.0)?"
+            action: drop
+          - sourceLabels: [__name__]
+            regex: "(apiserver|etcd)_.*"
+            action: drop
+
     prometheusOperator:
       tolerations: *control-plane-tolerations
 
