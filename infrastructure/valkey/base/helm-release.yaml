@@ -43,3 +43,23 @@ spec:
       persistence:
         storageClass: "longhorn"
         size: 8Gi
+
+    # Pin to the RK1s, one pod per node. Only the RK1s (and node-2-3) have
+    # Longhorn disks, so a pod on a Pi worker can never have its
+    # single-replica volume local -- valkey-2 on node-2-4 was reading and
+    # writing over the network to node-1-2 (2026-10-19). Volumes are 1
+    # replica each; Valkey's own replication is the redundancy.
+    nodeSelector:
+      node-role.kubernetes.io/control-plane: "true"
+    tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: valkey
+                app.kubernetes.io/instance: valkey
