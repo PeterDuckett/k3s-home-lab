@@ -1,0 +1,49 @@
+# Daily Longhorn backups to the UGREEN NAS (backup target set in
+# helm-release.yaml -> defaultBackupStore).
+#
+# Only volumes labelled into the "backup" group are backed up; volumes are
+# NOT in it by default. This keeps Prometheus (~26G of high-churn,
+# re-creatable data), the apt cache and duplicate replicas off the NAS.
+# Add a volume with:
+#   kubectl -n longhorn-system label volumes.longhorn.io <pv-name> \
+#     recurring-job-group.longhorn.io/backup=enabled
+# Volumes keep their existing "default" label, so the daily trim still runs.
+#
+# Postgres is deliberately not in this group: its data and WAL are separate
+# volumes, and Longhorn snapshots them at different moments, so a restore
+# would not be consistent. Postgres needs a CNPG-coordinated backup instead.
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: backup-daily
+  namespace: longhorn-system
+spec:
+  task: backup
+  # Daily 02:00 UTC, before the 04:00 trim
+  cron: "0 2 * * *"
+  groups:
+    - backup
+  # Keep 7 daily backups per volume
+  retain: 7
+  concurrency: 2
+  labels: {}
+---
+# Weekly backup of Longhorn's own config (settings, volumes, recurring
+# jobs, etc.) so Longhorn itself can be rebuilt. volume-backup-policy
+# "disabled" means it does NOT back up every volume's data as well --
+# volume data is covered by backup-daily above.
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: system-backup-weekly
+  namespace: longhorn-system
+spec:
+  task: system-backup
+  # Sundays 03:00 UTC
+  cron: "0 3 * * 0"
+  groups: []
+  retain: 4
+  concurrency: 1
+  parameters:
+    volume-backup-policy: disabled
+  labels: {}
