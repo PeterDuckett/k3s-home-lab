@@ -105,3 +105,14 @@ spec:
     # change (with an allow policy for the monitoring namespace).
     networkPolicies:
       restrictInternalTraffic: false
+
+    # 6. Backups go to the UGREEN NAS (10.14.100.90) over NFS. The NAS only
+    # serves NFSv3 (v4 mounts fail there), and Longhorn tries v4 by default,
+    # so the version is pinned in nfsOptions. nolock: no lockd/statd in the
+    # Longhorn pods; Longhorn uses its own lock files on the backupstore.
+    # Export /volume1/back-up is limited to 10.14.100.0/26 (cluster nodes),
+    # all users squashed to admin. Mount + write tested from node-1-2 on
+    # 2026-10-29. Which volumes get backed up: recurring-job-backup.yaml.
+    defaultBackupStore:
+      backupTarget: "nfs://10.14.100.90:/volume1/back-up/longhorn?nfsOptions=nfsvers=3,nolock,soft,timeo=600,retrans=3"
+      pollInterval: 300
