@@ -14,7 +14,7 @@ spec:
   chart:
     spec:
       chart: coredns
-      version: "1.49.x"
+      version: "1.50.x"
       sourceRef:
         kind: HelmRepository
         name: coredns
