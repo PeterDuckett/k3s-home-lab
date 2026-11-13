@@ -26,6 +26,28 @@ spec:
   values:
 
     infisical:
+      # Scheduling must live under `infisical:` -- the chart never read the
+      # old `backend:` block, so these were silently ignored and pods drifted
+      # onto the Pi workers (one took ~10 min to go Ready on node-2-4 during
+      # the 2026-11-13 RK1 reboots). Keep 2 replicas, on the RK1s, preferably
+      # on different nodes so a single RK1 reboot can't take both down.
+      replicaCount: 2
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: "true"
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    component: infisical
+                    release: infisical-infisical
       readinessProbe:
         httpGet:
           path: /api/status
@@ -45,20 +67,6 @@ spec:
     secrets:
       encryptionKey: "f3cbe836dabccc0da275d03d4be8b689a1699e910c036418130485eec6d3fce6"
       authSecret: "eacb586002ad6687b0ef42c77e6dd08fb285f26137b2c0bc22c8139b42ce1c2c"
-
-    # 1. Main Infisical Application Settings
-    backend:
-      replicaCount: 2
-      # Generate a random 32-byte hex string for this key before deploying
-      encryptionKey: "f3cbe836dabccc0da275d03d4be8b689a1699e910c036418130485eec6d3fce6"
-      
-      # Pin Infisical API server to your Turing Pi masters
-      nodeSelector:
-        node-role.kubernetes.io/control-plane: "true"
-      tolerations:
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Exists"
-          effect: "NoSchedule"
 
     # Serve the UI through Traefik instead of the chart's bundled
     # ingress-nginx. The bundled controller was v1.1.0 (2021, k8s.gcr.io)
