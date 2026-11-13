@@ -1,7 +1,14 @@
 # Infisical holds every secret the cluster uses, so its UI is LAN-only.
-# Traefik sees real client addresses (Cilium keeps the source IP), so this
-# allowlist is enforced. Do NOT create a public Cloudflare DNS record for
-# infisical.peterduckett.me -- resolve it on the LAN only (UniFi local DNS).
+# Primary protection: there is NO public Cloudflare DNS record for
+# infisical.peterduckett.me (resolve it on the LAN only, UniFi local DNS),
+# and WAN 443 only accepts Cloudflare, so the internet cannot route to it.
+# Do NOT create a public record.
+#
+# This allowlist is a second layer. Traefik's Service uses
+# externalTrafficPolicy: Cluster, so a request that lands on a Traefik pod
+# on another node is SNATed by Cilium to a pod-CIDR address (seen as
+# 10.42.x.x); only same-node requests keep the real client IP. The pod CIDR
+# therefore has to be allowed too, or about half of LAN requests get 403.
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
@@ -11,3 +18,4 @@ spec:
   ipAllowList:
     sourceRange:
       - 10.14.60.0/24 # Home VLAN
+      - 10.42.0.0/16  # k3s pod CIDR (Cilium SNAT for cross-node LB traffic)
