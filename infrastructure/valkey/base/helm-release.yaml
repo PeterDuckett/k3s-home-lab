@@ -40,9 +40,13 @@ spec:
       enabled: true
       replicas: 2
       replicationUser: "default"
-      persistence:
-        storageClass: "longhorn"
-        size: 8Gi
+
+    # Chart 1.0 moved replica.persistence to a top-level persistence block
+    # (used in both standalone and replication mode). PVC names are unchanged.
+    persistence:
+      enabled: true
+      storageClass: "longhorn"
+      size: 8Gi
 
     # Pin to the RK1s, one pod per node. Only the RK1s (and node-2-3) have
     # Longhorn disks, so a pod on a Pi worker can never have its
