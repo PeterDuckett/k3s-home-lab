@@ -60,6 +60,27 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
 
+    # Serve the UI through Traefik instead of the chart's bundled
+    # ingress-nginx. The bundled controller was v1.1.0 (2021, k8s.gcr.io)
+    # with its admission webhook on, i.e. exposed to IngressNightmare
+    # (CVE-2025-1974): unauthenticated RCE from any pod, and the controller
+    # can read every Secret in the cluster. ingress-nginx is also retired
+    # upstream. The secrets operator talks to the Service directly
+    # (InfisicalConnection -> *.svc.cluster.local:8080), so it is unaffected.
+    ingress:
+      enabled: true
+      hostName: infisical.peterduckett.me
+      ingressClassName: traefik
+      nginx:
+        enabled: false
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        traefik.ingress.kubernetes.io/router.middlewares: infisical-lan-only@kubernetescrd
+      tls:
+        - secretName: infisical-tls
+          hosts:
+            - infisical.peterduckett.me
+
     # 2. Database (Postgres) -- use the shared HA CloudNativePG cluster in the
     # database namespace instead of the chart's bundled single-instance
     # Postgres. The actual DB_CONNECTION_URI pointing at it is set in
