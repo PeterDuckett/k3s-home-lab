@@ -9,8 +9,8 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      # Track the 91.x line. Check for newer majors periodically.
-      version: "92.x"
+      # Track the 93.x line. Check for newer majors periodically.
+      version: "93.x"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -22,6 +22,10 @@ spec:
     remediation:
       retries: 3
   upgrade:
+    # Flux skips CRD updates on upgrade by default, which left the
+    # prometheus-operator CRDs behind the operator. Chart majors usually
+    # bump the operator (93.x -> v0.95.1), so keep CRDs in step.
+    crds: CreateReplace
     remediation:
       retries: 3
   values:
