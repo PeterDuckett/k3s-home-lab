@@ -45,6 +45,9 @@ spec:
     prometheus:
       prometheusSpec:
         retention: 15d
+        # Size cap on the 100Gi PVC (it filled at 20Gi in Sept 2026). Whichever
+        # limit is hit first wins; Prometheus drops the oldest blocks.
+        retentionSize: 80GB
         # Had no requests, so the scheduler counted ~3Gi of real usage as
         # zero on node-1-2. Sized for ~230k head series after PR #67; no
         # CPU limit (compaction bursts would just get throttled).
