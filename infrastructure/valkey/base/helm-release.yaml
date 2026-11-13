@@ -33,12 +33,12 @@ spec:
     auth:
       enabled: false
 
-    # Single StatefulSet, (replica.replicas + 1) pods total -- pod-0
-    # is the master, the rest replicate from it. There is no separate
+    # Single StatefulSet, replica.replicas pods total (chart 1.0+ counts
+    # the master) -- pod-0 is the master, the rest replicate from it. There is no separate
     # "primary"/"readReplicas" config in this chart, unlike Bitnami's.
     replica:
       enabled: true
-      replicas: 2
+      replicas: 3
       replicationUser: "default"
 
     # Chart 1.0 moved replica.persistence to a top-level persistence block
