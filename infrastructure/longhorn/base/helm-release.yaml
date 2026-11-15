@@ -9,7 +9,7 @@ spec:
     spec:
       chart: longhorn
       # 1. Upgrade one minor at a time (Longhorn only supports N-1 -> N).
-      version: "1.12.x"
+      version: "1.13.x"
       sourceRef:
         kind: HelmRepository
         name: longhorn
