@@ -7,7 +7,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: paperclip-data
-  namespace: paperclip
+  namespace: ai
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
