@@ -6,3 +6,4 @@ resources:
   - postgres-migration-secret.yaml
   - postgres-cluster.yaml
   - homeassistant-database.yaml
+  - paperclip-database.yaml

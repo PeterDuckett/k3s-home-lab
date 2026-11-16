@@ -1,0 +1,144 @@
+# Paperclip (github.com/paperclipai/paperclip) -- agent orchestration
+# control plane. Official multi-arch image (arm64 included).
+#
+# Mode: authenticated + public. In public exposure the browser
+# "claim first admin" route is disabled, so the first instance admin comes
+# from a one-time bootstrap invite generated inside the pod:
+#   kubectl -n paperclip exec deploy/paperclip -- \
+#     pnpm paperclipai auth bootstrap-ceo --base-url https://paperclip.peterduckett.me
+# Open the printed URL, sign up, accept. Then set
+# PAPERCLIP_AUTH_DISABLE_SIGN_UP to "true" below so nobody else can create
+# an account on the public URL (further users join via invites).
+#
+# Secrets (paperclip-secret) are synced from Infisical by the
+# InfisicalStaticSecret in paperclip-secret.yaml in this same directory
+# (see that file for the Infisical keys to create).
+# No agent provider keys yet -- to add one, put ANTHROPIC_API_KEY (etc.) in
+# Infisical /Paperclip, add a matching line to that file's template, then
+# restart the pod (envFrom is only read at start).
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: paperclip
+  namespace: paperclip
+spec:
+  releaseName: paperclip
+  chart:
+    spec:
+      chart: app-template
+      version: "5.x"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  interval: 15m
+  timeout: 10m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      # Agent CLIs fork a lot; give in-flight runs the same 90s settlement
+      # window upstream's compose file uses.
+      terminationGracePeriodSeconds: 90
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      # RK1s only: more CPU/RAM for agent CLIs, and the Longhorn replica can
+      # be local (Pi workers have no Longhorn disks, see valkey's release).
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: "true"
+    controllers:
+      main:
+        strategy: Recreate # RWO volume
+        containers:
+          main:
+            image:
+              repository: ghcr.io/paperclipai/paperclip
+              tag: 2026.1106.0
+            env:
+              TZ: "Europe/London"
+              PAPERCLIP_DEPLOYMENT_MODE: authenticated
+              PAPERCLIP_DEPLOYMENT_EXPOSURE: public
+              PAPERCLIP_PUBLIC_URL: &url https://paperclip.peterduckett.me
+              PAPERCLIP_AUTH_BASE_URL_MODE: explicit
+              PAPERCLIP_AUTH_PUBLIC_BASE_URL: *url
+              # Flip to "true" once the first admin has been bootstrapped.
+              PAPERCLIP_AUTH_DISABLE_SIGN_UP: "false"
+              # External DB: apply schema migrations on start (it would in
+              # a non-TTY anyway; this makes it explicit).
+              PAPERCLIP_MIGRATION_AUTO_APPLY: "true"
+              # Traffic arrives from Traefik pods (10.42.0.0/16).
+              TRUST_PROXY: uniquelocal
+              PAPERCLIP_TELEMETRY_DISABLED: "1"
+            envFrom:
+              - secretRef:
+                  name: paperclip-secret
+            probes:
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: &port 3100
+                  periodSeconds: 10
+                  failureThreshold: 60 # first boot runs migrations + full ownership probe
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: *port
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: *port
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+            resources:
+              requests:
+                cpu: 250m
+                memory: 512Mi
+              limits:
+                cpu: "2"
+                memory: 4Gi
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: *port
+    ingress:
+      main:
+        className: traefik
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        hosts:
+          - host: &host paperclip.peterduckett.me
+            paths:
+              - path: /
+                pathType: Prefix
+                service:
+                  identifier: main
+                  port: http
+        tls:
+          - secretName: paperclip-tls
+            hosts:
+              - *host
+    persistence:
+      data:
+        existingClaim: paperclip-data
+        globalMounts:
+          - path: /paperclip
