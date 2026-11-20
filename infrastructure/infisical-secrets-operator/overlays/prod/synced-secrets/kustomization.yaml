@@ -11,3 +11,4 @@ resources:
   - tdarr-secret.yaml
   - maintainerr-basicauth-secret.yaml
   - recyclarr-secret.yaml
+  - paperclip-postgres-secret.yaml

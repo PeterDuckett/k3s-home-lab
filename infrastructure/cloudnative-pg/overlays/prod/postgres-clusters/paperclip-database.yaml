@@ -1,0 +1,33 @@
+# Database + role for Paperclip (apps/base/paperclip), on the shared
+# Postgres cluster. Paperclip applies its own schema migrations on start
+# (PAPERCLIP_MIGRATION_AUTO_APPLY), so the role owns the database.
+#
+# Credentials come from Infisical (see
+# infrastructure/infisical-secrets-operator/overlays/prod/synced-secrets/paperclip-postgres-secret.yaml).
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: paperclip
+  namespace: database
+spec:
+  cluster:
+    name: postgres
+  name: paperclip
+  login: true
+  passwordSecret:
+    name: paperclip-postgres-credentials
+  comment: "Paperclip"
+  databaseRoleReclaimPolicy: retain
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: paperclip
+  namespace: database
+spec:
+  cluster:
+    name: postgres
+  name: paperclip
+  owner: paperclip
+  encoding: UTF8
+  databaseReclaimPolicy: retain

@@ -1,0 +1,19 @@
+# PAPERCLIP_HOME (/paperclip): uploaded assets, agent workspaces/worktrees,
+# instance config. The database itself is on the shared CNPG cluster (see
+# infrastructure/cloudnative-pg/overlays/prod/postgres-clusters/paperclip-database.yaml),
+# not embedded Postgres in here. Picked up by the nightly Longhorn -> NAS
+# backup like every other longhorn volume.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperclip-data
+  namespace: ai
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi
