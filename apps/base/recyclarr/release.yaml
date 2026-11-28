@@ -40,7 +40,7 @@ spec:
           main:
             image:
               repository: ghcr.io/recyclarr/recyclarr
-              tag: "8"
+              tag: "9"
             env:
               TZ: "Etc/UTC"
               CRON_SCHEDULE: "0 */6 * * *"
